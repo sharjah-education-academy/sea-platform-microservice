@@ -30,7 +30,7 @@ export class AccountShortResponse {
     this.type = account.type;
     this.birthDate = null;
     if (account.birthDate) {
-      this.birthDate = Utils.Moment.formatData(account.birthDate, 'YYYY-MM-DD');
+      this.birthDate = Utils.Moment.formatDate(account.birthDate, 'YYYY-MM-DD');
     }
     this.isLocked = account.isLocked;
     this.roles = roles;
