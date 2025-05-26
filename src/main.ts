@@ -3,14 +3,19 @@ import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
 import * as cookieParser from 'cookie-parser';
+import { ServerConfigService } from './models/server-config/server-config.service';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  const configService = app.get(ServerConfigService);
+
   app.setGlobalPrefix('/api');
 
+  const origin = (configService.get('CORS_ORIGIN') + '').split(',');
+
   app.enableCors({
-    origin: ['http://auth.localhost:3001', 'http://platform.localhost:3002'],
+    origin,
     credentials: true,
   });
   app.use(cookieParser());

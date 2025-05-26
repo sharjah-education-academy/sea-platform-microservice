@@ -5,12 +5,15 @@ import { File } from './file.model';
 import { Attributes, FindOptions } from 'sequelize';
 import { FileResponse } from './file.dto';
 import { Utils as BackendUtils } from 'sea-backend-helpers';
+import { ServerConfigService } from '../server-config/server-config.service';
 
 @Injectable()
 export class FileService {
   constructor(
     @Inject(Constants.Database.DatabaseRepositories.FileRepository)
     private fileRepository: typeof File,
+
+    private readonly serverConfigService: ServerConfigService,
   ) {}
 
   async findOne(options?: FindOptions<Attributes<File>>) {
@@ -42,6 +45,11 @@ export class FileService {
 
   async makeFileResponse(file: File | undefined) {
     if (!file) return undefined;
-    return new FileResponse(file);
+
+    const baseUrl = this.serverConfigService.get<string>(
+      'STATIC_FILES_BASE_URL',
+    );
+    const URL = baseUrl + file.path;
+    return new FileResponse(file, URL);
   }
 }

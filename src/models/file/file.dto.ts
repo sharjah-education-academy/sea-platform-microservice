@@ -13,11 +13,11 @@ export class FileResponse {
   @ApiProperty()
   URL: string;
 
-  constructor(file: File) {
+  constructor(file: File, URL: string) {
     this.id = file.id;
     this.name = file.name;
     this.size = file.size;
     this.mimetype = file.mimetype;
-    this.URL = 'http://localhost:4001/' + file.path.replace(/\\/g, '/'); // TODO
+    this.URL = URL.replace(/\\/g, '/');
   }
 }
