@@ -9,6 +9,8 @@ import {
   HasMany,
   Default,
   BelongsToMany,
+  ForeignKey,
+  BelongsTo,
 } from 'sequelize-typescript';
 import { Utils, CONSTANTS } from 'sea-platform-helpers';
 
@@ -17,6 +19,8 @@ import { Role } from '../role/role.model';
 import { AccountRoles } from '../account-role/account-role.model';
 import { AccountPermission } from '../account-permission/account-permission.model';
 import { Utils as BackendUtils } from 'sea-backend-helpers';
+import { Department } from '../department/department.model';
+import { Organization } from '../organization/organization.model';
 
 @Table({
   tableName: 'accounts',
@@ -94,6 +98,26 @@ export class Account extends Model {
 
   @HasMany(() => AccountPermission)
   accountPermissions: AccountPermission[];
+
+  @ForeignKey(() => Organization)
+  @Column({
+    type: DataType.UUID,
+    allowNull: true,
+  })
+  organizationId: string | undefined;
+
+  @BelongsTo(() => Organization)
+  organization: Organization | undefined;
+
+  @ForeignKey(() => Department)
+  @Column({
+    type: DataType.UUID,
+    allowNull: true,
+  })
+  departmentId: string | undefined;
+
+  @BelongsTo(() => Department)
+  department: Department | undefined;
 
   @BeforeCreate
   @BeforeUpdate

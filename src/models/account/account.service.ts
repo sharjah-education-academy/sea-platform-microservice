@@ -13,6 +13,10 @@ import { RoleService } from '../role/role.service';
 import { Role } from '../role/role.model';
 import { AccountFullResponse, AccountShortResponse } from './account.dto';
 import { Utils as BackendUtils } from 'sea-backend-helpers';
+import { OrganizationService } from '../organization/organization.service';
+import { DepartmentService } from '../department/department.service';
+import { Organization } from '../organization/organization.model';
+import { Department } from '../department/department.model';
 
 @Injectable()
 export class AccountService {
@@ -20,6 +24,8 @@ export class AccountService {
     @Inject(Constants.Database.DatabaseRepositories.AccountRepository)
     private accountRepository: typeof Account,
     private readonly roleService: RoleService,
+    private readonly organizationService: OrganizationService,
+    private readonly departmentService: DepartmentService,
   ) {}
 
   async getAccountRoles(account: Account) {
@@ -86,7 +92,38 @@ export class AccountService {
     }
   }
 
+  async assignOrganizationAndDepartmentAccount(
+    account: Account,
+    organizationId: string | undefined = undefined,
+    departmentId: string | undefined = undefined,
+  ) {
+    let organization: Organization | undefined = undefined,
+      department: Department | undefined = undefined;
+    if (organizationId)
+      organization = await this.organizationService.checkIsFound({
+        where: { id: organizationId },
+        include: [Department],
+      });
+
+    if (departmentId)
+      department = await this.departmentService.checkIsFound({
+        where: { id: departmentId },
+      });
+
+    if (organization && department)
+      await this.organizationService.checkIsHasThisDepartment(
+        organization,
+        department,
+      );
+
+    account.organizationId = organization?.id;
+    account.departmentId = department?.id;
+
+    return account;
+  }
+
   async create(data: Attributes<Account>, roleIds: string[]) {
+    const { organizationId, departmentId, ...restDate } = data;
     await Promise.all([
       this.checkPhoneNumberRegistered(data.phoneNumber),
       this.checkEmailRegistered(data.email),
@@ -96,9 +133,15 @@ export class AccountService {
 
     if (roleIds) roles = await this.roleService.findByIds(roleIds);
 
-    let account = new Account({
-      ...data,
+    let account = await this.accountRepository.create({
+      ...restDate,
     });
+
+    account = await this.assignOrganizationAndDepartmentAccount(
+      account,
+      organizationId,
+      departmentId,
+    );
 
     account = await account.save();
 
@@ -127,6 +170,12 @@ export class AccountService {
       await this.checkPhoneNumberRegistered(data.phoneNumber);
     if (data.email && data.email !== account.email)
       await this.checkEmailRegistered(data.email);
+
+    account = await this.assignOrganizationAndDepartmentAccount(
+      account,
+      data.organizationId,
+      data.departmentId,
+    );
 
     // Fetch current and new roles
     const [currentRoles, newRoles] = await Promise.all([
@@ -201,7 +250,24 @@ export class AccountService {
 
     const rolesResponse = await this.roleService.makeRolesShortResponse(roles);
 
-    return new AccountShortResponse(account, rolesResponse);
+    const organization = account.organization
+      ? account.organization
+      : await account.$get('organization');
+    const department = account.department
+      ? account.department
+      : await account.$get('department');
+
+    const [organizationResponse, departmentResponse] = await Promise.all([
+      this.organizationService.makeOrganizationResponse(organization),
+      this.departmentService.makeDepartmentResponse(department),
+    ]);
+
+    return new AccountShortResponse(
+      account,
+      rolesResponse,
+      organizationResponse,
+      departmentResponse,
+    );
   }
 
   async makeAccountFullResponse(account: Account) {
@@ -210,10 +276,24 @@ export class AccountService {
     const accountPermissions = await this.getAccountPermissions(account);
     const permissionKeys = accountPermissions.map((p) => p.permissionKey);
 
+    const organization = account.organization
+      ? account.organization
+      : await account.$get('organization');
+    const department = account.department
+      ? account.department
+      : await account.$get('department');
+
+    const [organizationResponse, departmentResponse] = await Promise.all([
+      this.organizationService.makeOrganizationResponse(organization),
+      this.departmentService.makeDepartmentResponse(department),
+    ]);
+
     return new AccountFullResponse(
       account,
       accountResponse.roles,
       permissionKeys,
+      organizationResponse,
+      departmentResponse,
     );
   }
 

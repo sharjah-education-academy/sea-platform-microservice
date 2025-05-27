@@ -101,13 +101,12 @@ export class ApplicationService {
   }
 
   async makeApplicationsResponse(applications: Application[]) {
-    const applicationsResponse: ApplicationResponse[] = [];
-    for (let i = 0; i < applications.length; i++) {
-      const application = applications[i];
-      const applicationResponse =
-        await this.makeApplicationResponse(application);
-      applicationsResponse.push(applicationResponse);
-    }
+    const applicationsResponse = await Promise.all(
+      applications.map((application) =>
+        this.makeApplicationResponse(application),
+      ),
+    );
+
     return applicationsResponse;
   }
 

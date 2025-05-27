@@ -9,6 +9,8 @@ import { AccountPermission } from 'src/models/account-permission/account-permiss
 import { RolePermission } from 'src/models/role-permission/role-permission.model';
 import { Application } from 'src/models/application/application.model';
 import { File } from 'src/models/file/file.model';
+import { Organization } from 'src/models/organization/organization.model';
+import { Department } from 'src/models/department/department.model';
 
 export const databaseProviders = [
   {
@@ -41,6 +43,8 @@ export const databaseProviders = [
         AccountPermission,
         Application,
         File,
+        Organization,
+        Department,
       ]);
       await sequelize.sync();
       return sequelize;

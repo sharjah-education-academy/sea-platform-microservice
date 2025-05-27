@@ -106,8 +106,25 @@ export class CreateAccountDto {
     required: true,
   })
   @IsArray()
-  // @ArrayNotEmpty()
   roleIds: string[];
+
+  @ApiProperty({
+    description: 'The organization ID',
+    example: '123e4567-e89b-12d3-a456-426614174000',
+    required: false,
+  })
+  @IsOptional({})
+  @IsString()
+  organizationId?: Date;
+
+  @ApiProperty({
+    description: 'The department ID',
+    example: '123e4567-e89b-12d3-a456-426614174000',
+    required: false,
+  })
+  @IsOptional({})
+  @IsString()
+  departmentId?: Date;
 }
 
 export class AccountArrayDataResponse extends ArrayDataResponse<AccountShortResponse> {
@@ -182,4 +199,22 @@ export class UpdateAccountDto {
   @IsArray()
   // @ArrayNotEmpty()
   roleIds: string[];
+
+  @ApiProperty({
+    description: 'The organization ID',
+    example: '123e4567-e89b-12d3-a456-426614174000',
+    required: false,
+  })
+  @IsOptional({})
+  @IsString()
+  organizationId?: Date;
+
+  @ApiProperty({
+    description: 'The department ID',
+    example: '123e4567-e89b-12d3-a456-426614174000',
+    required: false,
+  })
+  @IsOptional({})
+  @IsString()
+  departmentId?: Date;
 }

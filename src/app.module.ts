@@ -22,6 +22,9 @@ import { ApplicationControllerModule } from './controllers/application/applicati
 import { FileManagerControllerModule } from './controllers/file-manager/file-manager.module';
 import { join } from 'path';
 import { FileModule } from './modules/file.module';
+import { OrganizationModule } from './modules/organization.module';
+import { OrganizationControllerModule } from './controllers/organization/organization-controller.module';
+import { DepartmentModule } from './modules/department.module';
 
 @Module({
   imports: [
@@ -52,6 +55,9 @@ import { FileModule } from './modules/file.module';
     ApplicationControllerModule,
     FileModule,
     FileManagerControllerModule,
+    OrganizationModule,
+    OrganizationControllerModule,
+    DepartmentModule,
   ],
   controllers: [],
   providers: [],
