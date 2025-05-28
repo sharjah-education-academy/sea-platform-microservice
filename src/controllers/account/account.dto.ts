@@ -8,26 +8,15 @@ import {
   IsPhoneNumber,
   MinLength,
   MaxLength,
-  IsEnum,
   IsArray,
-  IsIn,
   IsBoolean,
 } from 'class-validator';
 
-import { Utils, CONSTANTS } from 'sea-platform-helpers';
+import { Utils } from 'sea-platform-helpers';
 import { ArrayDataResponse, FindAllDto } from 'src/common/global.dto';
 import { AccountShortResponse } from 'src/models/account/account.dto';
 
 export class FindAllAccountsDto extends FindAllDto {
-  @ApiProperty({
-    required: true,
-    type: String,
-    description: 'the roles account type',
-    enum: CONSTANTS.Account.AccountTypes,
-  })
-  @IsIn([...Object.values(CONSTANTS.Account.AccountTypes), 'all'])
-  type: CONSTANTS.Account.AccountTypes | 'all';
-
   @ApiProperty({
     required: true,
     type: String,
@@ -75,12 +64,6 @@ export class CreateAccountDto {
   phoneNumber: string;
 
   @ApiProperty({
-    enum: CONSTANTS.Account.AccountTypes,
-  })
-  @IsEnum(CONSTANTS.Account.AccountTypes)
-  type: CONSTANTS.Account.AccountTypes;
-
-  @ApiProperty({
     description: 'Password for the account account (min length: 8 characters)',
     example: 'SecurePassword123!',
     minLength: 8,
@@ -115,7 +98,8 @@ export class CreateAccountDto {
   })
   @IsOptional({})
   @IsString()
-  organizationId?: Date;
+  @Transform(({ value }) => (value === '' ? undefined : value))
+  organizationId?: string;
 
   @ApiProperty({
     description: 'The department ID',
@@ -124,7 +108,8 @@ export class CreateAccountDto {
   })
   @IsOptional({})
   @IsString()
-  departmentId?: Date;
+  @Transform(({ value }) => (value === '' ? undefined : value))
+  departmentId?: string;
 }
 
 export class AccountArrayDataResponse extends ArrayDataResponse<AccountShortResponse> {
@@ -207,7 +192,8 @@ export class UpdateAccountDto {
   })
   @IsOptional({})
   @IsString()
-  organizationId?: Date;
+  @Transform(({ value }) => (value === '' ? undefined : value))
+  organizationId?: string;
 
   @ApiProperty({
     description: 'The department ID',
@@ -216,5 +202,6 @@ export class UpdateAccountDto {
   })
   @IsOptional({})
   @IsString()
-  departmentId?: Date;
+  @Transform(({ value }) => (value === '' ? undefined : value))
+  departmentId?: string;
 }

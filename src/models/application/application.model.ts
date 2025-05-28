@@ -39,6 +39,14 @@ export class Application extends Model {
   })
   URL: string;
 
+  @Column({
+    type: DataType.ENUM(
+      ...Object.values(CONSTANTS.Application.ApplicationKeys),
+    ),
+    allowNull: false,
+  })
+  key: CONSTANTS.Application.ApplicationKeys;
+
   @Default(CONSTANTS.Application.ApplicationStatuses.Unavailable)
   @Column({
     type: DataType.ENUM(

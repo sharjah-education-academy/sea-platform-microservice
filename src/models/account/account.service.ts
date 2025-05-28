@@ -97,6 +97,44 @@ export class AccountService {
     organizationId: string | undefined = undefined,
     departmentId: string | undefined = undefined,
   ) {
+    organizationId = organizationId || undefined;
+    departmentId = departmentId || undefined;
+
+    let organization: Organization | undefined = undefined,
+      department: Department | undefined = undefined;
+    if (organizationId)
+      organization = await this.organizationService.checkIsFound({
+        where: { id: organizationId },
+        include: [Department],
+      });
+
+    if (departmentId)
+      department = await this.departmentService.checkIsFound({
+        where: { id: departmentId },
+      });
+
+    if (organization && department)
+      await this.organizationService.checkIsHasThisDepartment(
+        organization,
+        department,
+      );
+    account.organizationId = organization?.id ?? null;
+    account.departmentId = department?.id ?? null;
+
+    return account;
+  }
+
+  async create(data: Attributes<Account>, roleIds: string[]) {
+    const { organizationId, departmentId, ...restDate } = data;
+    await Promise.all([
+      this.checkPhoneNumberRegistered(data.phoneNumber),
+      this.checkEmailRegistered(data.email),
+    ]);
+
+    let roles: Role[] = [];
+
+    if (roleIds) roles = await this.roleService.findByIds(roleIds);
+
     let organization: Organization | undefined = undefined,
       department: Department | undefined = undefined;
     if (organizationId)
@@ -116,32 +154,11 @@ export class AccountService {
         department,
       );
 
-    account.organizationId = organization?.id;
-    account.departmentId = department?.id;
-
-    return account;
-  }
-
-  async create(data: Attributes<Account>, roleIds: string[]) {
-    const { organizationId, departmentId, ...restDate } = data;
-    await Promise.all([
-      this.checkPhoneNumberRegistered(data.phoneNumber),
-      this.checkEmailRegistered(data.email),
-    ]);
-
-    let roles: Role[] = [];
-
-    if (roleIds) roles = await this.roleService.findByIds(roleIds);
-
     let account = await this.accountRepository.create({
       ...restDate,
+      organizationId: organization?.id ?? null,
+      departmentId: department?.id ?? null,
     });
-
-    account = await this.assignOrganizationAndDepartmentAccount(
-      account,
-      organizationId,
-      departmentId,
-    );
 
     account = await account.save();
 
@@ -166,16 +183,30 @@ export class AccountService {
     data: Attributes<Account>,
     newRoleIds: string[],
   ) {
+    console.log(data);
     if (data.phoneNumber && data.phoneNumber !== account.phoneNumber)
       await this.checkPhoneNumberRegistered(data.phoneNumber);
     if (data.email && data.email !== account.email)
       await this.checkEmailRegistered(data.email);
 
-    account = await this.assignOrganizationAndDepartmentAccount(
-      account,
-      data.organizationId,
-      data.departmentId,
-    );
+    let organization: Organization | undefined = undefined,
+      department: Department | undefined = undefined;
+    if (data.organizationId)
+      organization = await this.organizationService.checkIsFound({
+        where: { id: data.organizationId },
+        include: [Department],
+      });
+
+    if (data.departmentId)
+      department = await this.departmentService.checkIsFound({
+        where: { id: data.departmentId },
+      });
+
+    if (organization && department)
+      await this.organizationService.checkIsHasThisDepartment(
+        organization,
+        department,
+      );
 
     // Fetch current and new roles
     const [currentRoles, newRoles] = await Promise.all([
@@ -206,7 +237,11 @@ export class AccountService {
       );
     }
 
-    return await account.update({ ...data });
+    return await account.update({
+      ...data,
+      organizationId: organization?.id ?? null,
+      departmentId: department?.id ?? null,
+    });
   }
 
   async toggleLockStatus(account: Account) {

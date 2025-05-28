@@ -9,6 +9,7 @@ import { ApplicationArrayDataResponse } from 'src/controllers/application/applic
 import { File } from '../file/file.model';
 import { FileService } from '../file/file.service';
 import { CONSTANTS } from 'sea-platform-helpers';
+import { Account } from '../account/account.model';
 
 @Injectable()
 export class ApplicationService {
@@ -22,14 +23,16 @@ export class ApplicationService {
     options?: FindOptions<Attributes<Application>>,
     page: number = 1,
     limit: number = 10,
+    all = false,
   ) {
     if (page < 1) page = 1;
     const offset = (page - 1) * limit;
+
+    options = all ? options : { ...options, limit, offset };
+
     const { count: totalCount, rows: applications } =
       await this.applicationRepository.findAndCountAll({
         ...options,
-        limit,
-        offset,
       });
     return {
       totalCount,
@@ -48,14 +51,17 @@ export class ApplicationService {
     return application;
   }
 
-  async create(data: Attributes<Application>, iconFileId: string) {
-    const file = await this.fileService.checkIsFound({
-      where: { id: iconFileId },
-    });
+  async create(data: Attributes<Application>, iconFileId: string | undefined) {
+    let file: File | undefined = undefined;
+
+    if (iconFileId)
+      file = await this.fileService.checkIsFound({
+        where: { id: iconFileId },
+      });
 
     const application = new Application({
       ...data,
-      iconFileId: file.id,
+      iconFileId: file?.id,
     });
 
     return await application.save();

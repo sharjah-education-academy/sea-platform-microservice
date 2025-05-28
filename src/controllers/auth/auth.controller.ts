@@ -30,8 +30,9 @@ import { JWTAuthGuard } from 'src/guards/jwt-authentication.guard';
 import { AccountService } from 'src/models/account/account.service';
 import { OTPService } from 'src/models/otp/otp.service';
 import { Op } from 'sequelize';
-import { DTO } from 'sea-platform-helpers';
+import { CONSTANTS, DTO } from 'sea-platform-helpers';
 import { Role } from 'src/models/role/role.model';
+import { ApplicationService } from 'src/models/application/application.service';
 
 @Controller('auth')
 @ApiTags('Internal', 'Auth')
@@ -40,6 +41,7 @@ export class AuthController {
     private readonly authService: AuthService,
     private readonly accountService: AccountService,
     private readonly OTPService: OTPService,
+    private readonly applicationService: ApplicationService,
   ) {}
 
   @Post('login')
@@ -203,5 +205,50 @@ export class AuthController {
     await this.accountService.changePassword(account, body.newPassword);
 
     return true;
+  }
+
+  @Get('/me/applications')
+  @UseGuards(JWTAuthGuard)
+  @ApiOperation({ summary: 'fetch allowed applications for me' })
+  @ApiOkResponse({
+    description: 'the allowed applications has been fetched',
+    type: AccountFullResponse,
+  })
+  @ApiUnauthorizedResponse({ description: 'Invalid token' })
+  async fetchAllowedApplications(
+    @Request() req: DTO.Request.AuthorizedRequest,
+  ) {
+    const accountId = req.context.id;
+    const account = await this.accountService.checkIsFound({
+      where: { id: accountId },
+      include: [Role],
+    });
+
+    const applicationIds = account.roles
+      .map((role) => role.applicationId)
+      .filter((value, index, self) => self.indexOf(value) === index);
+
+    const { applications } = await this.applicationService.findAll(
+      {
+        where: {
+          id: {
+            [Op.in]: applicationIds,
+          },
+          status: {
+            [Op.ne]: CONSTANTS.Application.ApplicationStatuses.Unavailable,
+          },
+        },
+      },
+      0,
+      0,
+      true,
+    );
+
+    const applicationResponses =
+      await this.applicationService.makeApplicationsResponse(applications);
+
+    return applicationResponses;
+
+    // this.applicationService.
   }
 }

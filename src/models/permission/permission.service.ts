@@ -2,7 +2,6 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 
 import { DTO } from 'sea-platform-helpers';
 import {
-  AllPermissionResponse,
   PermissionChecked,
   PermissionResponse,
   PermissionResponseForRole,
@@ -100,12 +99,7 @@ export class PermissionService {
   }
 
   async fetchAllPermissions() {
-    const [user, admin] = await Promise.all([
-      this.makePermissionsResponse(CONSTANTS.Permission.USER_PERMISSIONS),
-      this.makePermissionsResponse(CONSTANTS.Permission.ADMIN_PERMISSIONS),
-    ]);
-
-    return new AllPermissionResponse(user, admin);
+    return await this.makePermissionsResponse(CONSTANTS.Permission.PERMISSIONS);
   }
 
   async makePermissionResponseForRole(

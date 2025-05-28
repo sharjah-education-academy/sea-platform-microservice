@@ -32,7 +32,6 @@ import {
 } from './account.dto';
 import { AccountFullResponse } from 'src/models/account/account.dto';
 import { JWTAuthGuard } from 'src/guards/jwt-authentication.guard';
-import { CheckAccountTypeGuard } from 'src/guards/check-account-type.guard';
 import { Role } from 'src/models/role/role.model';
 import { JWTAuthorizationGuard } from 'src/guards/jwt-authorization.guard';
 import { WhereOptions } from 'sequelize';
@@ -43,10 +42,7 @@ import { CONSTANTS } from 'sea-platform-helpers';
 
 @Controller('accounts')
 @ApiTags('Internal', 'Account')
-@UseGuards(
-  JWTAuthGuard,
-  new CheckAccountTypeGuard(CONSTANTS.Account.AccountTypes.Admin),
-)
+@UseGuards(JWTAuthGuard)
 export class AccountController {
   constructor(private readonly accountService: AccountService) {}
 
@@ -95,11 +91,11 @@ export class AccountController {
     type: AccountArrayDataResponse,
   })
   async findAll(@Query() query: FindAllAccountsDto) {
-    const { q, type, roleId, isDeleted } = query;
+    const { q, roleId, isDeleted } = query;
 
     const where: WhereOptions<Account> = {};
     const roleWhere: WhereOptions<Role> = {};
-    if (type !== 'all') where['type'] = type;
+
     if (q) {
       where[Op.or] = ['id', 'name', 'email', 'phoneNumber'].map((c) =>
         Sequelize.where(Sequelize.fn('LOWER', Sequelize.col(`Account.${c}`)), {

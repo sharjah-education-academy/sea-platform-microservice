@@ -16,6 +16,7 @@ import { RolePermissionService } from '../role-permission/role-permission.servic
 import { AccountPermissionService } from '../account-permission/account-permission.service';
 import { Sequelize } from 'sequelize-typescript';
 import { CONSTANTS } from 'sea-platform-helpers';
+import { ApplicationService } from '../application/application.service';
 
 @Injectable()
 export class RoleService {
@@ -25,6 +26,7 @@ export class RoleService {
     private readonly permissionService: PermissionService,
     private readonly rolePermissionService: RolePermissionService,
     private readonly accountPermissionService: AccountPermissionService,
+    private readonly applicationService: ApplicationService,
   ) {}
 
   async getRolePermissions(role: Role) {
@@ -43,9 +45,18 @@ export class RoleService {
     return role.accounts ? role.accounts : await role.$get('accounts');
   }
 
-  async create(data: Attributes<Role>, permissionKeys: string[]) {
+  async create(
+    data: Attributes<Role>,
+    permissionKeys: string[],
+    applicationKey: CONSTANTS.Application.ApplicationKeys,
+  ) {
+    const application = await this.applicationService.checkIsFound({
+      where: { key: applicationKey },
+    });
+
     const role = new Role({
       ...data,
+      applicationId: application.id,
     });
 
     await role.save();
@@ -145,7 +156,12 @@ export class RoleService {
   }
 
   async makeRoleShortResponse(role: Role) {
-    return new RoleShortResponse(role);
+    const application = role.application
+      ? role.application
+      : await role.$get('application');
+    const applicationResponse =
+      await this.applicationService.makeApplicationResponse(application);
+    return new RoleShortResponse(role, applicationResponse);
   }
 
   async makeRolesShortResponse(roles: Role[]) {
@@ -162,10 +178,10 @@ export class RoleService {
     page: number,
     limit: number,
     q: string,
-    accountType: CONSTANTS.Account.AccountTypes | 'all',
+    applicationId: string,
   ) {
     const where: WhereOptions<Role> = {};
-    if (accountType !== 'all') where['type'] = accountType;
+    if (applicationId != 'all') where.applicationId = applicationId;
     if (q) {
       where[Op.or] = ['id', 'name'].map((c) =>
         Sequelize.where(Sequelize.fn('LOWER', Sequelize.col(`Role.${c}`)), {
@@ -187,14 +203,19 @@ export class RoleService {
   }
 
   async makeRoleFullResponse(role: Role): Promise<RoleFullResponse> {
+    const application = role.application
+      ? role.application
+      : await role.$get('application');
+    const applicationResponse =
+      await this.applicationService.makeApplicationResponse(application);
+
     const rolePermissions = await this.getRolePermissions(role);
 
     const permissionKeys = rolePermissions.map((p) => p.permissionKey);
 
-    const PERMISSIONS =
-      role.type === CONSTANTS.Account.AccountTypes.Admin
-        ? CONSTANTS.Permission.ADMIN_PERMISSIONS
-        : CONSTANTS.Permission.USER_PERMISSIONS;
+    const PERMISSIONS = CONSTANTS.Permission.PERMISSIONS.filter(
+      (p) => p.applicationKey === application.key,
+    );
 
     const permissionsResponse = await Promise.all(
       PERMISSIONS.map((permission) =>
@@ -205,7 +226,7 @@ export class RoleService {
       ),
     );
 
-    return new RoleFullResponse(role, permissionsResponse);
+    return new RoleFullResponse(role, applicationResponse, permissionsResponse);
   }
 
   async delete(role: Role) {

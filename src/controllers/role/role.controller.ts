@@ -20,7 +20,6 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { CheckAccountTypeGuard } from 'src/guards/check-account-type.guard';
 import { JWTAuthGuard } from 'src/guards/jwt-authentication.guard';
 import { RoleService } from 'src/models/role/role.service';
 import {
@@ -37,10 +36,7 @@ import { CONSTANTS } from 'sea-platform-helpers';
 
 @Controller('roles')
 @ApiTags('Internal', 'Role')
-@UseGuards(
-  JWTAuthGuard,
-  new CheckAccountTypeGuard(CONSTANTS.Account.AccountTypes.Admin),
-)
+@UseGuards(JWTAuthGuard)
 export class RoleController {
   constructor(private readonly roleService: RoleService) {}
 
@@ -57,8 +53,12 @@ export class RoleController {
   })
   @ApiBadRequestResponse({ description: 'Invalid input data' })
   async create(@Body() body: CreateRoleDto) {
-    const { permissionKeys, ...data } = body;
-    const role = await this.roleService.create(data, permissionKeys);
+    const { permissionKeys, applicationKey, ...data } = body;
+    const role = await this.roleService.create(
+      data,
+      permissionKeys,
+      applicationKey,
+    );
     return await this.roleService.makeRoleShortResponse(role);
   }
 
@@ -79,7 +79,7 @@ export class RoleController {
       query.page,
       query.limit,
       query.q,
-      query.accountType,
+      query.applicationId,
     );
 
     return response;

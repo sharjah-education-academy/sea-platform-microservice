@@ -10,4 +10,9 @@ export class SeederController {
   async seedSuperAdminAccount() {
     return this.seederService.seedSuperAdminAccount();
   }
+
+  @Post('/applications')
+  async seedApplications() {
+    return this.seederService.seedApplications();
+  }
 }

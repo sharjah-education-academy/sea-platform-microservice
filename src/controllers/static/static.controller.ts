@@ -1,6 +1,6 @@
 import { Controller, Get } from '@nestjs/common';
 import { ApiOperation, ApiResponse } from '@nestjs/swagger';
-import { AllPermissionResponse } from 'src/models/permission/permission.dto';
+import { PermissionResponse } from 'src/models/permission/permission.dto';
 import { PermissionService } from 'src/models/permission/permission.service';
 
 @Controller('static')
@@ -12,7 +12,8 @@ export class StaticController {
   @ApiResponse({
     status: 200,
     description: 'Retrieve permissions',
-    type: AllPermissionResponse,
+    type: PermissionResponse,
+    isArray: true,
   })
   async getPermissions() {
     return await this.permissionService.fetchAllPermissions();

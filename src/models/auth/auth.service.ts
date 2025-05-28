@@ -3,7 +3,6 @@ import { JwtService } from '@nestjs/jwt';
 
 import { AccountService } from '../account/account.service';
 import { LoginDto, MicrosoftLoginDto } from 'src/controllers/auth/auth.dto';
-import { CONSTANTS } from 'sea-platform-helpers';
 import { JWTConfig } from 'src/config';
 import { LoginResponse } from './auth.dto';
 import { AccountFullResponse } from '../account/account.dto';
@@ -26,7 +25,6 @@ export class AuthService {
     const token = this.jwtService.sign(
       {
         id: account.id,
-        type: account.type,
         permissionKeys: account.permissionKeys,
       },
       {
@@ -91,7 +89,6 @@ export class AuthService {
         {
           name,
           email,
-          type: CONSTANTS.Account.AccountTypes.User,
         },
         [],
       );

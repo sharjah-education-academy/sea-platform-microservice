@@ -7,12 +7,14 @@ import {
   Default,
   HasMany,
   BelongsToMany,
+  ForeignKey,
+  BelongsTo,
 } from 'sequelize-typescript';
 import { Account } from '../account/account.model';
 import { AccountRoles } from '../account-role/account-role.model';
 import { AccountPermission } from '../account-permission/account-permission.model';
 import { RolePermission } from '../role-permission/role-permission.model';
-import { CONSTANTS } from 'sea-platform-helpers';
+import { Application } from '../application/application.model';
 
 @Table({
   tableName: 'roles', // Set table name if different from model name
@@ -23,6 +25,13 @@ export class Role extends Model {
   @Default(DataType.UUIDV4)
   @Column(DataType.UUID)
   id: string;
+
+  @ForeignKey(() => Application)
+  @Column(DataType.UUID)
+  applicationId: string;
+
+  @BelongsTo(() => Application)
+  application: Application;
 
   @Column({
     type: DataType.STRING,
@@ -41,12 +50,6 @@ export class Role extends Model {
     allowNull: false,
   })
   color: string;
-
-  @Column({
-    type: DataType.ENUM(...Object.values(CONSTANTS.Account.AccountTypes)),
-    allowNull: false,
-  })
-  type: CONSTANTS.Account.AccountTypes;
 
   @BelongsToMany(() => Account, () => AccountRoles)
   accounts: Account[];

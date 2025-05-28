@@ -5,6 +5,7 @@ import { roleProviders } from 'src/models/role/role.provider';
 import { PermissionModuleDependencies } from './permission.module';
 import { RolePermissionModuleDependencies } from './role-permission.module';
 import { AccountPermissionModuleDependencies } from './account-permission.module';
+import { ApplicationModuleDependencies } from './application.module';
 
 export const RoleModuleDependencies = {
   imports: [DatabaseModule],
@@ -14,6 +15,7 @@ export const RoleModuleDependencies = {
     ...PermissionModuleDependencies.providers,
     ...RolePermissionModuleDependencies.providers,
     ...AccountPermissionModuleDependencies.providers,
+    ...ApplicationModuleDependencies.providers,
   ],
 };
 

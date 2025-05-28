@@ -6,26 +6,22 @@ import {
   IsOptional,
   IsArray,
   ArrayNotEmpty,
-  IsEnum,
-  IsIn,
 } from 'class-validator';
 import { ArrayDataResponse, FindAllDto } from 'src/common/global.dto';
 import { RoleShortResponse } from 'src/models/role/role.dto';
 import { CONSTANTS } from 'sea-platform-helpers';
 import { Decorators } from 'sea-backend-helpers';
+import { IsIn } from 'class-validator';
 
 const permissionKeys = [...Object.values(CONSTANTS.Permission.PermissionKeys)];
 
 export class FindAllRolesDto extends FindAllDto {
   @ApiProperty({
-    required: false,
-    type: String,
-    description: 'the roles account type (nothing means all)',
-    enum: CONSTANTS.Account.AccountTypes,
+    description: 'The ID of the application to filter roles by',
+    required: true,
   })
-  @IsIn([...Object.values(CONSTANTS.Account.AccountTypes), 'all'])
-  @IsOptional()
-  accountType: CONSTANTS.Account.AccountTypes | 'all';
+  @IsString()
+  applicationId: string | 'all';
 }
 
 export class CreateRoleDto {
@@ -39,6 +35,14 @@ export class CreateRoleDto {
   @MinLength(3)
   @MaxLength(50)
   name: string;
+
+  @ApiProperty({
+    description: 'The key of the application this role belongs to',
+    enum: CONSTANTS.Application.ApplicationKeys,
+    required: true,
+  })
+  @IsIn([...Object.values(CONSTANTS.Application.ApplicationKeys)])
+  applicationKey: CONSTANTS.Application.ApplicationKeys;
 
   @ApiProperty({
     description: 'The description of the role',
@@ -63,12 +67,6 @@ export class CreateRoleDto {
     message: `Each permission must be one of the valid keys: ${permissionKeys.join(', ')}`,
   })
   permissionKeys: string[];
-
-  @ApiProperty({
-    enum: CONSTANTS.Account.AccountTypes,
-  })
-  @IsEnum(CONSTANTS.Account.AccountTypes)
-  type: CONSTANTS.Account.AccountTypes;
 }
 
 export class RoleShortArrayDataResponse extends ArrayDataResponse<RoleShortResponse> {

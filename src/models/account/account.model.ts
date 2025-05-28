@@ -12,7 +12,7 @@ import {
   ForeignKey,
   BelongsTo,
 } from 'sequelize-typescript';
-import { Utils, CONSTANTS } from 'sea-platform-helpers';
+import { Utils } from 'sea-platform-helpers';
 
 import { OTP } from '../otp/otp.model';
 import { Role } from '../role/role.model';
@@ -86,12 +86,6 @@ export class Account extends Model {
 
   @HasMany(() => OTP)
   OTPs: OTP[];
-
-  @Column({
-    type: DataType.ENUM(...Object.values(CONSTANTS.Account.AccountTypes)),
-    allowNull: false,
-  })
-  type: CONSTANTS.Account.AccountTypes;
 
   @BelongsToMany(() => Role, () => AccountRoles)
   roles: Role[];

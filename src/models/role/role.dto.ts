@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Role } from './role.model';
 import { PermissionResponseForRole } from '../permission/permission.dto';
-import { CONSTANTS } from 'sea-platform-helpers';
+import { ApplicationResponse } from '../application/application.dto';
 
 export class RoleShortResponse {
   @ApiProperty()
@@ -12,17 +12,16 @@ export class RoleShortResponse {
   description: string;
   @ApiProperty()
   color: string;
-  @ApiProperty({
-    enum: CONSTANTS.Account.AccountTypes,
-  })
-  type: CONSTANTS.Account.AccountTypes;
 
-  constructor(role: Role) {
+  @ApiProperty({ type: ApplicationResponse })
+  application: ApplicationResponse;
+
+  constructor(role: Role, application: ApplicationResponse) {
     this.id = role.id;
     this.name = role.name;
     this.description = role.description;
     this.color = role.color;
-    this.type = role.type;
+    this.application = application;
   }
 }
 
@@ -30,8 +29,12 @@ export class RoleFullResponse extends RoleShortResponse {
   @ApiProperty({ type: PermissionResponseForRole, isArray: true })
   permissions: PermissionResponseForRole[];
 
-  constructor(role: Role, permissions: PermissionResponseForRole[]) {
-    super(role);
+  constructor(
+    role: Role,
+    application: ApplicationResponse,
+    permissions: PermissionResponseForRole[],
+  ) {
+    super(role, application);
     this.permissions = permissions;
   }
 }

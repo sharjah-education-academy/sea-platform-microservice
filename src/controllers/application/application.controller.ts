@@ -4,14 +4,11 @@ import {
   Delete,
   Get,
   Param,
-  Post,
   Put,
   Query,
   UseGuards,
 } from '@nestjs/common';
 import {
-  ApiBadRequestResponse,
-  ApiCreatedResponse,
   ApiNoContentResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
@@ -24,43 +21,20 @@ import { JWTAuthorizationGuard } from 'src/guards/jwt-authorization.guard';
 import { ApplicationService } from 'src/models/application/application.service';
 import {
   ApplicationArrayDataResponse,
-  CreateApplicationDto,
   FindAllApplicationsDto,
   UpdateApplicationDto,
   UpdateApplicationStatusDto,
 } from './application.dto';
 import { JWTAuthGuard } from 'src/guards/jwt-authentication.guard';
-import { CheckAccountTypeGuard } from 'src/guards/check-account-type.guard';
 import { ApplicationResponse } from 'src/models/application/application.dto';
 import { File } from 'src/models/file/file.model';
 import { CONSTANTS } from 'sea-platform-helpers';
 
 @Controller('applications')
 @ApiTags('Internal', 'Application')
-@UseGuards(
-  JWTAuthGuard,
-  new CheckAccountTypeGuard(CONSTANTS.Account.AccountTypes.Admin),
-)
+@UseGuards(JWTAuthGuard)
 export class ApplicationController {
   constructor(private readonly applicationService: ApplicationService) {}
-
-  @Post()
-  @UseGuards(
-    new JWTAuthorizationGuard([
-      CONSTANTS.Permission.PermissionKeys.ManageApplicationCreate,
-    ]),
-  )
-  @ApiOperation({ summary: 'Create a new application' })
-  @ApiCreatedResponse({
-    description: 'The application has been successfully created.',
-    type: ApplicationResponse,
-  })
-  @ApiBadRequestResponse({ description: 'Invalid input data' })
-  async create(@Body() body: CreateApplicationDto) {
-    const { iconFileId, ...data } = body;
-    const application = await this.applicationService.create(data, iconFileId);
-    return await this.applicationService.makeApplicationResponse(application);
-  }
 
   @Get()
   @UseGuards(
@@ -83,6 +57,31 @@ export class ApplicationController {
         query.status,
       );
     return response;
+  }
+
+  @Get('/list')
+  @UseGuards(
+    new JWTAuthorizationGuard([
+      CONSTANTS.Permission.PermissionKeys.ManageApplicationRead,
+    ]),
+  )
+  @ApiOperation({ summary: 'fetch list of applications' })
+  @ApiResponse({
+    status: 200,
+    description: 'Retrieve a list of applications',
+    type: ApplicationResponse,
+    isArray: true,
+  })
+  async findAllWithoutPagination() {
+    const { applications } = await this.applicationService.findAll(
+      {},
+      0,
+      0,
+      true,
+    );
+    const applicationsResponse =
+      await this.applicationService.makeApplicationsResponse(applications);
+    return applicationsResponse;
   }
 
   @Get('/:id')

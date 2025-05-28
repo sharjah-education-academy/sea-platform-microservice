@@ -15,8 +15,7 @@ export class AccountShortResponse {
   email: string;
   @ApiProperty()
   phoneNumber: string;
-  @ApiProperty()
-  type: CONSTANTS.Account.AccountTypes;
+
   @ApiProperty()
   birthDate: string;
   @ApiProperty({ type: Boolean })
@@ -37,7 +36,6 @@ export class AccountShortResponse {
     this.name = account.name;
     this.email = account.email;
     this.phoneNumber = account.phoneNumber;
-    this.type = account.type;
     this.birthDate = null;
     if (account.birthDate) {
       this.birthDate = Utils.Moment.formatDate(account.birthDate, 'YYYY-MM-DD');

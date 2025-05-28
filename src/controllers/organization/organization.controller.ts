@@ -31,7 +31,6 @@ import {
   UpdateOrganizationDto,
 } from './organization.dto';
 import { JWTAuthGuard } from 'src/guards/jwt-authentication.guard';
-import { CheckAccountTypeGuard } from 'src/guards/check-account-type.guard';
 import {
   OrganizationArrayDataResponse,
   OrganizationResponse,
@@ -46,10 +45,7 @@ import { Department } from 'src/models/department/department.model';
 
 @Controller('organizations')
 @ApiTags('Internal', 'Organization')
-@UseGuards(
-  JWTAuthGuard,
-  new CheckAccountTypeGuard(CONSTANTS.Account.AccountTypes.Admin),
-)
+@UseGuards(JWTAuthGuard)
 export class OrganizationController {
   constructor(
     private readonly organizationService: OrganizationService,

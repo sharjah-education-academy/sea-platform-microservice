@@ -6,6 +6,9 @@ export class PermissionResponse {
   @ApiProperty()
   key: CONSTANTS.Permission.PermissionKeys;
 
+  @ApiProperty({ enum: CONSTANTS.Application.ApplicationKeys })
+  applicationKey: CONSTANTS.Application.ApplicationKeys;
+
   @ApiProperty({ type: Boolean })
   isLeaf: boolean;
 
@@ -17,20 +20,10 @@ export class PermissionResponse {
     children: PermissionResponse[],
   ) {
     this.name = permission.name;
+    this.applicationKey = permission.applicationKey;
     this.key = permission.key;
     this.children = children;
     this.isLeaf = !children || !children?.length;
-  }
-}
-
-export class AllPermissionResponse {
-  @ApiProperty({ type: PermissionResponse, isArray: true })
-  User: PermissionResponse[];
-  @ApiProperty({ type: PermissionResponse, isArray: true })
-  Admin: PermissionResponse[];
-  constructor(User: PermissionResponse[], Admin: PermissionResponse[]) {
-    this.Admin = Admin;
-    this.User = User;
   }
 }
 

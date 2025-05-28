@@ -10,40 +10,6 @@ import { ArrayDataResponse, FindAllDto } from 'src/common/global.dto';
 import { ApplicationResponse } from 'src/models/application/application.dto';
 import { CONSTANTS } from 'sea-platform-helpers';
 
-export class CreateApplicationDto {
-  @ApiProperty({
-    description: 'The name of the application',
-    example: 'ANY',
-    minLength: 3,
-    maxLength: 50,
-  })
-  @IsString()
-  @MinLength(3)
-  @MaxLength(50)
-  name: string;
-
-  @ApiProperty({
-    description: 'The description of the role',
-    nullable: true,
-  })
-  @IsOptional()
-  description: string | undefined;
-
-  @ApiProperty({
-    required: true,
-    description: 'The icon file id of the application',
-  })
-  @IsString()
-  iconFileId: string;
-
-  @ApiProperty({
-    required: true,
-    description: 'The URL of the application',
-  })
-  @IsString()
-  URL: string;
-}
-
 export class UpdateApplicationDto {
   @ApiProperty({
     description: 'The name of the application',

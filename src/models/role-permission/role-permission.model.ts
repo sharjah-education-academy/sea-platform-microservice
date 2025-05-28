@@ -7,7 +7,6 @@ import {
   Default,
   ForeignKey,
 } from 'sequelize-typescript';
-import { Constants } from 'src/config';
 import { Role } from '../role/role.model';
 import { CONSTANTS } from 'sea-platform-helpers';
 
