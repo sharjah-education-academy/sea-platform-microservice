@@ -50,16 +50,20 @@ export class AccountShortResponse {
 export class AccountFullResponse extends AccountShortResponse {
   @ApiProperty({ enum: CONSTANTS.Permission.PermissionKeys, isArray: true })
   permissionKeys: CONSTANTS.Permission.PermissionKeys[];
+  @ApiProperty({ enum: CONSTANTS.Application.ApplicationKeys, isArray: true })
+  applicationKeys: CONSTANTS.Application.ApplicationKeys[];
 
   constructor(
     account: Account,
     roles: RoleShortResponse[],
-    permissionKeys: CONSTANTS.Permission.PermissionKeys[],
     organization: OrganizationResponse | undefined,
     department: DepartmentResponse | undefined,
+    permissionKeys: CONSTANTS.Permission.PermissionKeys[],
+    applicationKeys: CONSTANTS.Application.ApplicationKeys[],
   ) {
     super(account, roles, organization, department);
 
     this.permissionKeys = permissionKeys;
+    this.applicationKeys = applicationKeys;
   }
 }

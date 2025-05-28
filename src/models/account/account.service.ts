@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { Account } from './account.model';
 import { Constants } from 'src/config';
-import { Attributes, FindOptions } from 'sequelize';
+import { Attributes, FindAndCountOptions, FindOptions } from 'sequelize';
 import { Op } from 'sequelize';
 import { RoleService } from '../role/role.service';
 import { Role } from '../role/role.model';
@@ -17,6 +17,9 @@ import { OrganizationService } from '../organization/organization.service';
 import { DepartmentService } from '../department/department.service';
 import { Organization } from '../organization/organization.model';
 import { Department } from '../department/department.model';
+import { Application } from '../application/application.model';
+import { ApplicationService } from '../application/application.service';
+import { CONSTANTS } from 'sea-platform-helpers';
 
 @Injectable()
 export class AccountService {
@@ -26,6 +29,7 @@ export class AccountService {
     private readonly roleService: RoleService,
     private readonly organizationService: OrganizationService,
     private readonly departmentService: DepartmentService,
+    private readonly applicationService: ApplicationService,
   ) {}
 
   async getAccountRoles(account: Account) {
@@ -39,7 +43,7 @@ export class AccountService {
   }
 
   async findAll(
-    options?: FindOptions<Attributes<Account>>,
+    options?: FindAndCountOptions<Attributes<Account>>,
     page: number = 1,
     limit: number = 10,
   ) {
@@ -305,6 +309,32 @@ export class AccountService {
     );
   }
 
+  async getAccountApplications(account: Account) {
+    const roles = await this.getAccountRoles(account);
+
+    const applicationIds = roles
+      .map((role) => role.applicationId)
+      .filter((value, index, self) => self.indexOf(value) === index);
+
+    const { applications } = await this.applicationService.findAll(
+      {
+        where: {
+          id: {
+            [Op.in]: applicationIds,
+          },
+          status: {
+            [Op.ne]: CONSTANTS.Application.ApplicationStatuses.Unavailable,
+          },
+        },
+      },
+      0,
+      0,
+      true,
+    );
+
+    return applications;
+  }
+
   async makeAccountFullResponse(account: Account) {
     const accountResponse = await this.makeAccountShortResponse(account);
 
@@ -323,12 +353,17 @@ export class AccountService {
       this.departmentService.makeDepartmentResponse(department),
     ]);
 
+    const applications = await this.getAccountApplications(account);
+
+    const applicationKeys = applications.map((a) => a.key);
+
     return new AccountFullResponse(
       account,
       accountResponse.roles,
-      permissionKeys,
       organizationResponse,
       departmentResponse,
+      permissionKeys,
+      applicationKeys,
     );
   }
 

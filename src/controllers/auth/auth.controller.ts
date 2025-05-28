@@ -224,31 +224,12 @@ export class AuthController {
       include: [Role],
     });
 
-    const applicationIds = account.roles
-      .map((role) => role.applicationId)
-      .filter((value, index, self) => self.indexOf(value) === index);
-
-    const { applications } = await this.applicationService.findAll(
-      {
-        where: {
-          id: {
-            [Op.in]: applicationIds,
-          },
-          status: {
-            [Op.ne]: CONSTANTS.Application.ApplicationStatuses.Unavailable,
-          },
-        },
-      },
-      0,
-      0,
-      true,
-    );
+    const applications =
+      await this.accountService.getAccountApplications(account);
 
     const applicationResponses =
       await this.applicationService.makeApplicationsResponse(applications);
 
     return applicationResponses;
-
-    // this.applicationService.
   }
 }

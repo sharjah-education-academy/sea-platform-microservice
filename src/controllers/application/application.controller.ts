@@ -1,7 +1,6 @@
 import {
   Body,
   Controller,
-  Delete,
   Get,
   Param,
   Put,
@@ -9,7 +8,6 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import {
-  ApiNoContentResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
@@ -177,34 +175,6 @@ export class ApplicationController {
       body.status,
     );
 
-    const applicationResponse =
-      await this.applicationService.makeApplicationResponse(application);
-    return applicationResponse;
-  }
-
-  @Delete('/:id')
-  @UseGuards(
-    new JWTAuthorizationGuard([
-      CONSTANTS.Permission.PermissionKeys.ManageApplicationDelete,
-    ]),
-  )
-  @ApiOperation({ summary: 'delete application (force delete)' })
-  @ApiParam({
-    name: 'id',
-    type: Number,
-    description: 'ID of the application to delete',
-  })
-  @ApiNoContentResponse({
-    description: 'application successfully force deleted',
-    type: ApplicationResponse,
-  })
-  @ApiNotFoundResponse({ description: 'Application not found' })
-  async delete(@Param('id') id: string) {
-    const application = await this.applicationService.checkIsFound({
-      where: { id },
-      include: [File],
-    });
-    await this.applicationService.delete(application);
     const applicationResponse =
       await this.applicationService.makeApplicationResponse(application);
     return applicationResponse;

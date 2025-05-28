@@ -117,6 +117,7 @@ export class AccountController {
         where,
         include: [{ model: Role, where: roleWhere }],
         paranoid: !isDeleted,
+        distinct: true,
       },
       query.page,
       query.limit,

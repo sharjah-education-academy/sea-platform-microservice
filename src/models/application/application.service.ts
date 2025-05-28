@@ -9,7 +9,6 @@ import { ApplicationArrayDataResponse } from 'src/controllers/application/applic
 import { File } from '../file/file.model';
 import { FileService } from '../file/file.service';
 import { CONSTANTS } from 'sea-platform-helpers';
-import { Account } from '../account/account.model';
 
 @Injectable()
 export class ApplicationService {
@@ -84,16 +83,6 @@ export class ApplicationService {
   ) {
     application.status = status;
     return await application.save();
-  }
-
-  async delete(application: Application) {
-    const file = application.iconFile
-      ? application.iconFile
-      : await application.$get('iconFile');
-
-    await this.fileService.delete(file);
-
-    await application.destroy({ force: true });
   }
 
   async makeApplicationResponse(application: Application) {

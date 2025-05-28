@@ -26,6 +26,7 @@ export class AuthService {
       {
         id: account.id,
         permissionKeys: account.permissionKeys,
+        applicationKeys: account.applicationKeys,
       },
       {
         secret: JWT_SECRET,
