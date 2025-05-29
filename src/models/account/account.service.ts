@@ -17,7 +17,6 @@ import { OrganizationService } from '../organization/organization.service';
 import { DepartmentService } from '../department/department.service';
 import { Organization } from '../organization/organization.model';
 import { Department } from '../department/department.model';
-import { Application } from '../application/application.model';
 import { ApplicationService } from '../application/application.service';
 import { CONSTANTS } from 'sea-platform-helpers';
 

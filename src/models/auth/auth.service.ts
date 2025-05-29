@@ -8,20 +8,22 @@ import { LoginResponse } from './auth.dto';
 import { AccountFullResponse } from '../account/account.dto';
 import { Op } from 'sequelize';
 import { MicrosoftAuthService } from '../microsoft-auth/microsoft-auth.service';
-import { ServerConfigService } from '../server-config/server-config.service';
 import { Utils as BackendUtils } from 'sea-backend-helpers';
-
+import * as fs from 'fs';
+import * as path from 'path';
 @Injectable()
 export class AuthService {
   constructor(
     private readonly jwtService: JwtService,
     private readonly accountService: AccountService,
     private readonly microsoftAuthService: MicrosoftAuthService,
-    private readonly serverConfigService: ServerConfigService,
   ) {}
 
   private async signToken(account: AccountFullResponse) {
-    const JWT_SECRET = this.serverConfigService.get<string>('JWT_SECRET') || '';
+    const privateKey = fs.readFileSync(
+      path.join(__dirname, '..', '..', 'keys/private.pem'),
+    );
+
     const token = this.jwtService.sign(
       {
         id: account.id,
@@ -29,7 +31,8 @@ export class AuthService {
         applicationKeys: account.applicationKeys,
       },
       {
-        secret: JWT_SECRET,
+        privateKey,
+        algorithm: 'RS256',
         ...JWTConfig.JWT_OPTIONS,
       },
     );

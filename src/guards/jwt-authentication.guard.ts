@@ -7,16 +7,14 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
 import { Observable } from 'rxjs';
+import { Utils } from 'sea-backend-helpers';
 import { DTO } from 'sea-platform-helpers';
-
-import { ServerConfigService } from 'src/models/server-config/server-config.service';
+import * as fs from 'fs';
+import * as path from 'path';
 
 @Injectable()
 export class JWTAuthGuard implements CanActivate {
-  constructor(
-    private readonly jwtService: JwtService,
-    private readonly serverConfigService: ServerConfigService,
-  ) {}
+  constructor(private readonly jwtService: JwtService) {}
 
   canActivate(
     context: ExecutionContext,
@@ -27,35 +25,25 @@ export class JWTAuthGuard implements CanActivate {
 
     const authorization = (request.headers as any).authorization;
 
-    if (!authorization)
-      throw new UnauthorizedException(
-        'the token is not provided in the authorization request headers',
-      );
+    const publicKey = fs.readFileSync(
+      path.join(__dirname, '..', '..', 'keys/public.pem'),
+    );
 
-    let token = authorization;
-    if (authorization.startsWith('Bearer ')) token = authorization.substring(7);
+    const { message, success, payload } = Utils.JWT.verifyJWTRequest(
+      authorization,
+      publicKey,
+      this.jwtService.verify.bind(this.jwtService),
+    );
 
-    try {
-      const JWT_SECRET =
-        this.serverConfigService.get<string>('JWT_SECRET') || '';
-      const payload = this.jwtService.verify(token, {
-        secret: JWT_SECRET,
-      });
+    if (!success) throw new UnauthorizedException(message);
 
-      request.context = {
-        id: payload.id,
-        type: payload.type,
-        account: undefined,
-        permissionKeys: payload.permissionKeys,
-        applicationKeys: payload.applicationKeys,
-      };
+    request.context = {
+      id: payload.id,
+      account: undefined,
+      permissionKeys: payload.permissionKeys,
+      applicationKeys: payload.applicationKeys,
+    };
 
-      return true;
-    } catch (error: any) {
-      throw new UnauthorizedException(
-        `invalid or expired token (${error.message})`,
-      );
-      return false;
-    }
+    return true;
   }
 }

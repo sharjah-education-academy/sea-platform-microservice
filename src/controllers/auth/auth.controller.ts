@@ -30,7 +30,7 @@ import { JWTAuthGuard } from 'src/guards/jwt-authentication.guard';
 import { AccountService } from 'src/models/account/account.service';
 import { OTPService } from 'src/models/otp/otp.service';
 import { Op } from 'sequelize';
-import { CONSTANTS, DTO } from 'sea-platform-helpers';
+import { DTO } from 'sea-platform-helpers';
 import { Role } from 'src/models/role/role.model';
 import { ApplicationService } from 'src/models/application/application.service';
 
