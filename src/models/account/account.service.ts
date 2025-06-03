@@ -186,7 +186,6 @@ export class AccountService {
     data: Attributes<Account>,
     newRoleIds: string[],
   ) {
-    console.log(data);
     if (data.phoneNumber && data.phoneNumber !== account.phoneNumber)
       await this.checkPhoneNumberRegistered(data.phoneNumber);
     if (data.email && data.email !== account.email)
@@ -335,6 +334,7 @@ export class AccountService {
   }
 
   async makeAccountFullResponse(account: Account) {
+    if (!account) return null;
     const accountResponse = await this.makeAccountShortResponse(account);
 
     const accountPermissions = await this.getAccountPermissions(account);

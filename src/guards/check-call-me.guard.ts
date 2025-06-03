@@ -28,15 +28,28 @@ export class CheckCallMe implements CanActivate {
         'the token is not provided in the authorization request headers',
       );
 
-    let token = authorization;
-    if (authorization.startsWith('Bearer ')) token = authorization.substring(7);
+    let base64Credentials = authorization;
 
-    const CALL_ME_SECRET =
-      this.serverConfigService.get<string>('CALL_ME_SECRET');
+    if (authorization.startsWith('Basic '))
+      base64Credentials = authorization.substring(6);
 
-    if (token !== CALL_ME_SECRET) {
-      throw new UnauthorizedException(`invalid or expired token`);
-    }
+    const credentials = Buffer.from(base64Credentials, 'base64').toString(
+      'utf-8',
+    );
+
+    const [clientId, clientSecret] = credentials.split(':');
+
+    const CALL_ME_CLIENT_ID =
+      this.serverConfigService.get<string>('CALL_ME_CLIENT_ID');
+    const CALL_ME_CLIENT_SECRET = this.serverConfigService.get<string>(
+      'CALL_ME_CLIENT_SECRET',
+    );
+
+    if (
+      CALL_ME_CLIENT_ID !== clientId ||
+      CALL_ME_CLIENT_SECRET !== clientSecret
+    )
+      throw new UnauthorizedException(`invalid credentials!`);
 
     return true;
   }
