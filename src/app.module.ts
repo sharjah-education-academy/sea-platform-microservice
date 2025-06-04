@@ -25,6 +25,7 @@ import { FileModule } from './modules/file.module';
 import { OrganizationModule } from './modules/organization.module';
 import { OrganizationControllerModule } from './controllers/organization/organization-controller.module';
 import { DepartmentModule } from './modules/department.module';
+import { ExternalOrganizationControllerModule } from './controllers/external/organization/external-organization-controller.module';
 
 @Module({
   imports: [
@@ -58,6 +59,7 @@ import { DepartmentModule } from './modules/department.module';
     OrganizationModule,
     OrganizationControllerModule,
     DepartmentModule,
+    ExternalOrganizationControllerModule,
   ],
   controllers: [],
   providers: [],
