@@ -3,13 +3,9 @@ import { DatabaseModule } from 'src/database/database.module';
 import { permissionProviders } from 'src/models/permission/permission.provider';
 import { PermissionService } from 'src/models/permission/permission.service';
 
-export const PermissionModuleDependencies = {
+@Module({
   imports: [DatabaseModule],
   providers: [PermissionService, ...permissionProviders],
-};
-
-@Module({
-  imports: [...PermissionModuleDependencies.imports],
-  providers: [...PermissionModuleDependencies.providers],
+  exports: [PermissionService],
 })
 export class PermissionModule {}

@@ -1,15 +1,12 @@
 import { Module } from '@nestjs/common';
-import { DatabaseModule } from 'src/database/database.module';
-import { fileProviders } from 'src/models/file/file.provider';
+import { HttpClientConfigService } from 'src/common/global.service';
 import { FileService } from 'src/models/file/file.service';
-
-export const FileModuleDependencies = {
-  imports: [DatabaseModule],
-  providers: [FileService, ...fileProviders],
-};
+import { ServerConfigModule } from './server-config.module';
+import { HttpModule } from '@nestjs/axios';
 
 @Module({
-  imports: [...FileModuleDependencies.imports],
-  providers: [...FileModuleDependencies.providers],
+  imports: [HttpModule, ServerConfigModule],
+  providers: [FileService, HttpClientConfigService],
+  exports: [FileService],
 })
 export class FileModule {}

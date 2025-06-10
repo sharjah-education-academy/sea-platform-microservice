@@ -1,7 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Application } from './application.model';
-import { FileResponse } from '../file/file.dto';
-import { CONSTANTS } from 'sea-platform-helpers';
+import { CONSTANTS, DTO } from 'sea-platform-helpers';
 
 export class ApplicationResponse {
   @ApiProperty()
@@ -12,8 +11,9 @@ export class ApplicationResponse {
   key: CONSTANTS.Application.ApplicationKeys;
   @ApiProperty({ required: false })
   description: string | undefined;
-  @ApiProperty({ type: FileResponse, nullable: true })
-  iconFile: FileResponse | undefined;
+  // TODO
+  @ApiProperty({ type: Object, nullable: true })
+  iconFile: DTO.File.IFile | undefined;
   @ApiProperty({
     enum: CONSTANTS.Application.ApplicationStatuses,
   })
@@ -21,7 +21,7 @@ export class ApplicationResponse {
   @ApiProperty()
   URL: string;
 
-  constructor(application: Application, iconFile: FileResponse | undefined) {
+  constructor(application: Application, iconFile: DTO.File.IFile | undefined) {
     this.id = application.id;
     this.name = application.name;
     this.key = application.key;

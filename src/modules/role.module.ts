@@ -2,25 +2,20 @@ import { Module } from '@nestjs/common';
 import { DatabaseModule } from 'src/database/database.module';
 import { RoleService } from 'src/models/role/role.service';
 import { roleProviders } from 'src/models/role/role.provider';
-import { PermissionModuleDependencies } from './permission.module';
-import { RolePermissionModuleDependencies } from './role-permission.module';
-import { AccountPermissionModuleDependencies } from './account-permission.module';
-import { ApplicationModuleDependencies } from './application.module';
-
-export const RoleModuleDependencies = {
-  imports: [DatabaseModule],
-  providers: [
-    RoleService,
-    ...roleProviders,
-    ...PermissionModuleDependencies.providers,
-    ...RolePermissionModuleDependencies.providers,
-    ...AccountPermissionModuleDependencies.providers,
-    ...ApplicationModuleDependencies.providers,
-  ],
-};
+import { PermissionModule } from './permission.module';
+import { RolePermissionModule } from './role-permission.module';
+import { AccountPermissionModule } from './account-permission.module';
+import { ApplicationModule } from './application.module';
 
 @Module({
-  imports: [...RoleModuleDependencies.imports],
-  providers: [...RoleModuleDependencies.providers],
+  imports: [
+    DatabaseModule,
+    PermissionModule,
+    RolePermissionModule,
+    AccountPermissionModule,
+    ApplicationModule,
+  ],
+  providers: [RoleService, ...roleProviders],
+  exports: [RoleService],
 })
 export class RoleModule {}

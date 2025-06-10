@@ -1,11 +1,12 @@
 import { Module } from '@nestjs/common';
 
 import { SeederController } from './seeder.controller';
-import { SeederModuleDependencies } from 'src/modules/seeder.module';
 import { ServerConfigService } from 'src/models/server-config/server-config.service';
+import { SeederModule } from 'src/modules/seeder.module';
 
 @Module({
+  imports: [SeederModule],
   controllers: [SeederController],
-  providers: [ServerConfigService, ...SeederModuleDependencies.providers],
+  providers: [ServerConfigService],
 })
 export class SeederControllerModule {}

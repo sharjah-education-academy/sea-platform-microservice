@@ -5,10 +5,7 @@ import {
   PrimaryKey,
   DataType,
   Default,
-  ForeignKey,
-  BelongsTo,
 } from 'sequelize-typescript';
-import { File } from '../file/file.model';
 import { CONSTANTS } from 'sea-platform-helpers';
 
 @Table({
@@ -56,13 +53,9 @@ export class Application extends Model {
   })
   status: CONSTANTS.Application.ApplicationStatuses;
 
-  @ForeignKey(() => File)
   @Column({
     type: DataType.UUID,
     allowNull: true,
   })
   iconFileId: string | undefined;
-
-  @BelongsTo(() => File, { as: 'iconFile' })
-  iconFile: File | undefined;
 }

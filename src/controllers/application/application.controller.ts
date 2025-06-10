@@ -25,7 +25,6 @@ import {
 } from './application.dto';
 import { JWTAuthGuard } from 'src/guards/jwt-authentication.guard';
 import { ApplicationResponse } from 'src/models/application/application.dto';
-import { File } from 'src/models/file/file.model';
 import { CONSTANTS } from 'sea-platform-helpers';
 
 @Controller('applications')
@@ -102,7 +101,6 @@ export class ApplicationController {
   async fetchApplicationDetails(@Param('id') id: string) {
     const application = await this.applicationService.checkIsFound({
       where: { id },
-      include: [File],
     });
     const applicationResponse =
       await this.applicationService.makeApplicationResponse(application);
