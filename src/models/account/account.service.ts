@@ -284,9 +284,7 @@ export class AccountService {
 
   async makeAccountShortResponse(account: Account) {
     const roles = await this.getAccountRoles(account);
-
     const rolesResponse = await this.roleService.makeRolesShortResponse(roles);
-
     const organization = account.organization
       ? account.organization
       : await account.$get('organization');
@@ -336,7 +334,6 @@ export class AccountService {
   async makeAccountFullResponse(account: Account) {
     if (!account) return null;
     const accountResponse = await this.makeAccountShortResponse(account);
-
     const accountPermissions = await this.getAccountPermissions(account);
     const permissionKeys = accountPermissions.map((p) => p.permissionKey);
 

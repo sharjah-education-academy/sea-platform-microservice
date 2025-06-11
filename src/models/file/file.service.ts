@@ -1,38 +1,17 @@
 import { HttpService } from '@nestjs/axios';
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { ServerConfigService } from '../server-config/server-config.service';
 import { firstValueFrom } from 'rxjs';
 import { DTO } from 'sea-platform-helpers';
 import { Cache, CACHE_MANAGER } from '@nestjs/cache-manager';
-import { HttpClientConfigService } from 'src/common/global.service';
+import { Constants } from 'src/config';
 
 @Injectable()
 export class FileService {
-  private adminBaseUrl: string;
-  private callAdminClientId: string;
-  private callAdminClientSecret: string;
-
   constructor(
+    @Inject(Constants.HttpProvider.HTTPProviders.FileManager)
     private readonly httpService: HttpService,
-    private serverConfigService: ServerConfigService,
-    private readonly httpClientConfigService: HttpClientConfigService,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
-  ) {
-    this.adminBaseUrl = this.serverConfigService.get('FILE_MANAGER_BASE_URL');
-    this.callAdminClientId = this.serverConfigService.get(
-      'CALL_FILE_MANAGER_CLIENT_ID',
-    );
-    this.callAdminClientSecret = this.serverConfigService.get(
-      'CALL_FILE_MANAGER_CLIENT_SECRET',
-    );
-
-    this.httpClientConfigService.configureHttpService(
-      this.httpService,
-      this.adminBaseUrl,
-      this.callAdminClientId,
-      this.callAdminClientSecret,
-    );
-  }
+  ) {}
 
   async fetchById(id: string): Promise<DTO.File.IFile | null> {
     const cacheKey = `file:${id}`;
