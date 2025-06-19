@@ -1,15 +1,10 @@
 import { Module } from '@nestjs/common';
-import { DatabaseModule } from 'src/database/database.module';
-import { fileProviders } from 'src/models/file/file.provider';
 import { FileService } from 'src/models/file/file.service';
-
-export const FileModuleDependencies = {
-  imports: [DatabaseModule],
-  providers: [FileService, ...fileProviders],
-};
+import { HttpProvidersModule } from './http-providers.module';
 
 @Module({
-  imports: [...FileModuleDependencies.imports],
-  providers: [...FileModuleDependencies.providers],
+  imports: [HttpProvidersModule],
+  providers: [FileService],
+  exports: [FileService],
 })
 export class FileModule {}

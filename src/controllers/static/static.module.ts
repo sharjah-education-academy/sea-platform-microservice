@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
 
 import { StaticController } from './static.controller';
-import { PermissionModuleDependencies } from 'src/modules/permission.module';
+import { PermissionModule } from 'src/modules/permission.module';
 
 @Module({
+  imports: [PermissionModule],
   controllers: [StaticController],
-  providers: [...PermissionModuleDependencies.providers],
 })
 export class StaticControllerModule {}

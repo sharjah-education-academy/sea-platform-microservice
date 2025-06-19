@@ -66,7 +66,6 @@ export class AuthService {
 
     if (account.isLocked)
       throw new UnauthorizedException('The account has been locked!');
-
     const accountResponse =
       await this.accountService.makeAccountFullResponse(account);
 

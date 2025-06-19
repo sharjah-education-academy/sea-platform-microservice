@@ -6,9 +6,8 @@ import { ApplicationResponse } from './application.dto';
 import { Op } from 'sequelize';
 import { Sequelize } from 'sequelize-typescript';
 import { ApplicationArrayDataResponse } from 'src/controllers/application/application.dto';
-import { File } from '../file/file.model';
+import { CONSTANTS, DTO } from 'sea-platform-helpers';
 import { FileService } from '../file/file.service';
-import { CONSTANTS } from 'sea-platform-helpers';
 
 @Injectable()
 export class ApplicationService {
@@ -51,12 +50,9 @@ export class ApplicationService {
   }
 
   async create(data: Attributes<Application>, iconFileId: string | undefined) {
-    let file: File | undefined = undefined;
+    let file: DTO.File.IFile | undefined = undefined;
 
-    if (iconFileId)
-      file = await this.fileService.checkIsFound({
-        where: { id: iconFileId },
-      });
+    if (iconFileId) file = await this.fileService.checkFindById(iconFileId);
 
     const application = new Application({
       ...data,
@@ -71,9 +67,7 @@ export class ApplicationService {
     data: Attributes<Application>,
     iconFileId: string,
   ) {
-    const file = await this.fileService.checkIsFound({
-      where: { id: iconFileId },
-    });
+    const file = await this.fileService.checkFindById(iconFileId);
 
     return await application.update({ ...data, iconFileId: file.id });
   }
@@ -86,13 +80,9 @@ export class ApplicationService {
   }
 
   async makeApplicationResponse(application: Application) {
-    const file = application.iconFile
-      ? application.iconFile
-      : await application.$get('iconFile');
+    const file = await this.fileService.fetchById(application.iconFileId);
 
-    const fileResponse = await this.fileService.makeFileResponse(file);
-
-    return new ApplicationResponse(application, fileResponse);
+    return new ApplicationResponse(application, file);
   }
 
   async makeApplicationsResponse(applications: Application[]) {
@@ -125,7 +115,7 @@ export class ApplicationService {
     }
 
     const { totalCount, applications } = await this.findAll(
-      { where, include: [File] },
+      { where },
       page,
       limit,
     );

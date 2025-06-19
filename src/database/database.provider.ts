@@ -8,7 +8,6 @@ import { AccountRoles } from 'src/models/account-role/account-role.model';
 import { AccountPermission } from 'src/models/account-permission/account-permission.model';
 import { RolePermission } from 'src/models/role-permission/role-permission.model';
 import { Application } from 'src/models/application/application.model';
-import { File } from 'src/models/file/file.model';
 import { Organization } from 'src/models/organization/organization.model';
 import { Department } from 'src/models/department/department.model';
 
@@ -42,7 +41,6 @@ export const databaseProviders = [
         AccountRoles,
         AccountPermission,
         Application,
-        File,
         Organization,
         Department,
       ]);

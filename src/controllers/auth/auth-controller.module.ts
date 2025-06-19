@@ -1,14 +1,15 @@
 import { Module } from '@nestjs/common';
 
 import { AuthController } from './auth.controller';
-import { AuthModuleDependencies } from 'src/modules/auth.module';
-import { OTPModuleDependencies } from 'src/modules/otp.module';
+import { AuthModule } from 'src/modules/auth.module';
+import { OTPModule } from 'src/modules/otp.module';
+import { JwtService } from '@nestjs/jwt';
+import { AccountModule } from 'src/modules/account.module';
+import { ApplicationModule } from 'src/modules/application.module';
 
 @Module({
+  imports: [AuthModule, AccountModule, OTPModule, ApplicationModule],
   controllers: [AuthController],
-  providers: [
-    ...AuthModuleDependencies.providers,
-    ...OTPModuleDependencies.providers,
-  ],
+  providers: [JwtService],
 })
 export class AuthControllerModule {}

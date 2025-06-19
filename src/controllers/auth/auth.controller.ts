@@ -52,7 +52,8 @@ export class AuthController {
   })
   @ApiUnauthorizedResponse({ description: 'Invalid credentials' })
   async login(@Body() body: LoginDto) {
-    return await this.authService.login(body);
+    const LoginResponse = await this.authService.login(body);
+    return LoginResponse;
   }
 
   @Post('/microsoft/login')

@@ -2,20 +2,14 @@ import { Module } from '@nestjs/common';
 import { DatabaseModule } from 'src/database/database.module';
 
 import { SeederService } from 'src/models/seeder/seeder.service';
-import { AccountModuleDependencies } from './account.module';
-import { ApplicationModuleDependencies } from './application.module';
-
-export const SeederModuleDependencies = {
-  imports: [DatabaseModule],
-  providers: [
-    SeederService,
-    ...AccountModuleDependencies.providers,
-    ...ApplicationModuleDependencies.providers,
-  ],
-};
+import { AccountModule } from './account.module';
+import { ApplicationModule } from './application.module';
+import { RoleModule } from './role.module';
+import { PermissionService } from 'src/models/permission/permission.service';
 
 @Module({
-  imports: [...SeederModuleDependencies.imports],
-  providers: [...SeederModuleDependencies.providers],
+  imports: [DatabaseModule, AccountModule, ApplicationModule, RoleModule],
+  providers: [SeederService, PermissionService],
+  exports: [SeederService],
 })
 export class SeederModule {}

@@ -1,20 +1,12 @@
 import { Module } from '@nestjs/common';
 import { DatabaseModule } from 'src/database/database.module';
-import { PermissionModuleDependencies } from './permission.module';
 import { accountPermissionProviders } from 'src/models/account-permission/account-permission.provider';
 import { AccountPermissionService } from 'src/models/account-permission/account-permission.service';
-
-export const AccountPermissionModuleDependencies = {
-  imports: [DatabaseModule],
-  providers: [
-    AccountPermissionService,
-    ...accountPermissionProviders,
-    ...PermissionModuleDependencies.providers,
-  ],
-};
+import { PermissionModule } from './permission.module';
 
 @Module({
-  imports: [...AccountPermissionModuleDependencies.imports],
-  providers: [...AccountPermissionModuleDependencies.providers],
+  imports: [DatabaseModule, PermissionModule],
+  providers: [AccountPermissionService, ...accountPermissionProviders],
+  exports: [AccountPermissionService],
 })
 export class AccountPermissionModule {}

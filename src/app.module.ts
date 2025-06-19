@@ -1,5 +1,4 @@
 import { Module } from '@nestjs/common';
-import { ServeStaticModule } from '@nestjs/serve-static';
 import { DatabaseModule } from './database/database.module';
 import { AccountModule } from './modules/account.module';
 import { AccountControllerModule } from './controllers/account/account-controller.module';
@@ -19,12 +18,12 @@ import { RolePermissionModule } from './modules/role-permission.module';
 import { AccountPermissionModule } from './modules/account-permission.module';
 import { ApplicationModule } from './modules/application.module';
 import { ApplicationControllerModule } from './controllers/application/application.module';
-import { FileManagerControllerModule } from './controllers/file-manager/file-manager.module';
-import { join } from 'path';
 import { FileModule } from './modules/file.module';
 import { OrganizationModule } from './modules/organization.module';
 import { OrganizationControllerModule } from './controllers/organization/organization-controller.module';
 import { DepartmentModule } from './modules/department.module';
+import { ExternalOrganizationControllerModule } from './controllers/external/organization/external-organization-controller.module';
+import { CacheModule } from '@nestjs/cache-manager';
 
 @Module({
   imports: [
@@ -32,9 +31,9 @@ import { DepartmentModule } from './modules/department.module';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-    ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '..', 'public'),
-      serveRoot: '/public',
+    CacheModule.register({
+      isGlobal: true, // optional: make cache available app-wide
+      ttl: 1000 * 3600, // cache time in milliseconds
     }),
     ServerConfigModule,
     AccountModule,
@@ -54,10 +53,10 @@ import { DepartmentModule } from './modules/department.module';
     ApplicationModule,
     ApplicationControllerModule,
     FileModule,
-    FileManagerControllerModule,
     OrganizationModule,
     OrganizationControllerModule,
     DepartmentModule,
+    ExternalOrganizationControllerModule,
   ],
   controllers: [],
   providers: [],
