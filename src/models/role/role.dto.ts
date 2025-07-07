@@ -13,6 +13,12 @@ export class RoleShortResponse {
   @ApiProperty()
   color: string;
 
+  @ApiProperty({ type: Boolean })
+  isDefault: boolean;
+
+  @ApiProperty({ type: Boolean })
+  isDeletable: boolean;
+
   @ApiProperty({ type: ApplicationResponse })
   application: ApplicationResponse;
 
@@ -21,6 +27,8 @@ export class RoleShortResponse {
     this.name = role.name;
     this.description = role.description;
     this.color = role.color;
+    this.isDefault = role.isDefault;
+    this.isDeletable = role.isDeletable;
     this.application = application;
   }
 }

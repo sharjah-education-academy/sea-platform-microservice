@@ -51,6 +51,20 @@ export class Role extends Model {
   })
   color: string;
 
+  @Default(true)
+  @Column({
+    type: DataType.BOOLEAN,
+    allowNull: false,
+  })
+  isDeletable: boolean;
+
+  @Default(false)
+  @Column({
+    type: DataType.BOOLEAN,
+    allowNull: false,
+  })
+  isDefault: boolean;
+
   @BelongsToMany(() => Account, () => AccountRoles)
   accounts: Account[];
 

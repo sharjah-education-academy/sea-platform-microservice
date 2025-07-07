@@ -11,12 +11,14 @@ import { MicrosoftAuthService } from '../microsoft-auth/microsoft-auth.service';
 import { Utils as BackendUtils } from 'sea-backend-helpers';
 import * as fs from 'fs';
 import * as path from 'path';
+import { RoleService } from '../role/role.service';
 @Injectable()
 export class AuthService {
   constructor(
     private readonly jwtService: JwtService,
     private readonly accountService: AccountService,
     private readonly microsoftAuthService: MicrosoftAuthService,
+    private readonly roleService: RoleService,
   ) {}
 
   private async signToken(account: AccountFullResponse) {
@@ -80,6 +82,10 @@ export class AuthService {
     const { email, name } =
       await this.microsoftAuthService.verifyIdToken(idToken);
 
+    const { roles } = await this.roleService.findAll({
+      where: { isDefault: true },
+    });
+
     // create account if not exist
     let account = await this.accountService.findOne({
       where: { email },
@@ -93,7 +99,7 @@ export class AuthService {
           name,
           email,
         },
-        [],
+        roles.map((r) => r.id),
       );
     }
 
