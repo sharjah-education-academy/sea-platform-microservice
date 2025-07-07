@@ -57,11 +57,12 @@ export class AuthService {
       where: { [Op.or]: { email: identifier, phoneNumber: identifier } },
     });
 
-    if (!account) throw new UnauthorizedException('Invalid credentials');
+    if (!account || !account?.password)
+      throw new UnauthorizedException('Invalid credentials');
 
     const isCorrect = await BackendUtils.Bcrypt.comparePassword(
       password,
-      account?.password,
+      account.password,
     );
 
     if (!isCorrect) throw new UnauthorizedException('Invalid credentials');

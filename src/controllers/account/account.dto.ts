@@ -59,9 +59,12 @@ export class CreateAccountDto {
   @ApiProperty({
     description: 'The phone number of the account in a valid format',
     example: '+1234567890',
+    required: false,
   })
+  @Transform(({ value }) => (value === '' ? undefined : value))
+  @IsOptional()
   @IsPhoneNumber()
-  phoneNumber: string;
+  phoneNumber?: string;
 
   @ApiProperty({
     description: 'Password for the account account (min length: 8 characters)',
@@ -161,9 +164,12 @@ export class UpdateAccountDto {
   @ApiProperty({
     description: 'The phone number of the account in a valid format',
     example: '+1234567890',
+    required: false,
   })
+  @Transform(({ value }) => (value === '' ? undefined : value))
+  @IsOptional()
   @IsPhoneNumber()
-  phoneNumber: string;
+  phoneNumber?: string;
 
   @ApiProperty({
     description: 'The birth date of the account in ISO format',
