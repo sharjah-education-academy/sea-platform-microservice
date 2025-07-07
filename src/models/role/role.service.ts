@@ -230,6 +230,11 @@ export class RoleService {
   }
 
   async delete(role: Role) {
+    if (!role.isDeletable)
+      throw new BadRequestException(
+        `Can't delete this role (${role.name}), it is not deletable`,
+      );
+
     // Fetch accounts associated with the role
     const accounts = await this.getAccounts(role);
 
