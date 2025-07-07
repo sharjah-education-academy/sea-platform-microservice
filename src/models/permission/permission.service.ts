@@ -31,9 +31,9 @@ export class PermissionService {
 
   async getLeafKeys(key: string) {
     const permission = await this.findPermissionByKey(key);
-    return (await Utils.DFS.getAllLeafNodes(permission, 'children').map(
+    return await Utils.DFS.getAllLeafNodes(permission, 'children').map(
       (p) => p.key,
-    )) as string[];
+    );
   }
 
   async getAllLeafKeys() {

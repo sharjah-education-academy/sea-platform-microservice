@@ -6,13 +6,8 @@ import { SeederService } from 'src/models/seeder/seeder.service';
 export class SeederController {
   constructor(private readonly seederService: SeederService) {}
 
-  @Post('/super-admin')
-  async seedSuperAdminAccount() {
-    return this.seederService.seedSuperAdminAccount();
-  }
-
-  @Post('/applications')
-  async seedApplications() {
-    return this.seederService.seedApplications();
+  @Post('/seed-init-data')
+  async seedInitData() {
+    return await this.seederService.seedInitData();
   }
 }
