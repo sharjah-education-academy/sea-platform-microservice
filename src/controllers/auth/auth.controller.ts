@@ -5,6 +5,7 @@ import {
   Post,
   Put,
   Request,
+  Res,
   UseGuards,
 } from '@nestjs/common';
 import {
@@ -33,6 +34,7 @@ import { Op } from 'sequelize';
 import { DTO } from 'sea-platform-helpers';
 import { Role } from 'src/models/role/role.model';
 import { ApplicationService } from 'src/models/application/application.service';
+import { Response } from 'express';
 
 @Controller('auth')
 @ApiTags('Internal', 'Auth')
@@ -51,8 +53,19 @@ export class AuthController {
     type: LoginResponse,
   })
   @ApiUnauthorizedResponse({ description: 'Invalid credentials' })
-  async login(@Body() body: LoginDto) {
+  async login(
+    @Body() body: LoginDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
     const LoginResponse = await this.authService.login(body);
+    res.cookie('accessToken', LoginResponse.accessToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'none',
+      domain: '.platform.sea.ac.ae', // Share across subdomains
+      path: '/',
+      maxAge: 1000 * 60 * 60 * 24, // 1 day
+    });
     return LoginResponse;
   }
 
