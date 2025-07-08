@@ -65,7 +65,7 @@ export class AuthController {
 
     const LoginResponse = await this.authService.login(body);
     res.cookie(CONSTANTS.JWT.JWTCookieKey, LoginResponse.accessToken, {
-      httpOnly: true,
+      httpOnly: false,
       secure: true,
       sameSite: 'none',
       domain: sharedCookieDomain, // Share across subdomains
@@ -92,7 +92,7 @@ export class AuthController {
     const LoginResponse = await this.authService.microsoftLogin(body);
 
     res.cookie(CONSTANTS.JWT.JWTCookieKey, LoginResponse.accessToken, {
-      httpOnly: true,
+      httpOnly: false,
       secure: true,
       sameSite: 'none',
       domain: sharedCookieDomain, // Share across subdomains
@@ -109,7 +109,7 @@ export class AuthController {
       '.platform.sea.ac.ae';
 
     res.cookie(CONSTANTS.JWT.JWTCookieKey, '', {
-      httpOnly: true,
+      httpOnly: false,
       secure: true,
       sameSite: 'none',
       domain: sharedCookieDomain,
