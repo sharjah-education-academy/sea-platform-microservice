@@ -5,6 +5,7 @@ import {
   Post,
   Put,
   Request,
+  Res,
   UseGuards,
 } from '@nestjs/common';
 import {
@@ -30,9 +31,11 @@ import { JWTAuthGuard } from 'src/guards/jwt-authentication.guard';
 import { AccountService } from 'src/models/account/account.service';
 import { OTPService } from 'src/models/otp/otp.service';
 import { Op } from 'sequelize';
-import { DTO } from 'sea-platform-helpers';
+import { CONSTANTS, DTO } from 'sea-platform-helpers';
 import { Role } from 'src/models/role/role.model';
 import { ApplicationService } from 'src/models/application/application.service';
+import { Response } from 'express';
+import { ServerConfigService } from 'src/models/server-config/server-config.service';
 
 @Controller('auth')
 @ApiTags('Internal', 'Auth')
@@ -42,6 +45,7 @@ export class AuthController {
     private readonly accountService: AccountService,
     private readonly OTPService: OTPService,
     private readonly applicationService: ApplicationService,
+    private readonly serverConfigService: ServerConfigService,
   ) {}
 
   @Post('login')
@@ -51,8 +55,23 @@ export class AuthController {
     type: LoginResponse,
   })
   @ApiUnauthorizedResponse({ description: 'Invalid credentials' })
-  async login(@Body() body: LoginDto) {
+  async login(
+    @Body() body: LoginDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const sharedCookieDomain =
+      this.serverConfigService.get<string>('SHARED_COOKIE_DOMAIN') ||
+      '.platform.sea.ac.ae';
+
     const LoginResponse = await this.authService.login(body);
+    res.cookie(CONSTANTS.JWT.JWTCookieKey, LoginResponse.accessToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'none',
+      domain: sharedCookieDomain, // Share across subdomains
+      path: '/',
+      maxAge: 1000 * 60 * 60 * 24 * 30, // 30 days
+    });
     return LoginResponse;
   }
 
@@ -63,8 +82,42 @@ export class AuthController {
     type: LoginResponse,
   })
   @ApiUnauthorizedResponse({ description: 'The Id Token is invalid' })
-  async microsoftLoginAccount(@Body() body: MicrosoftLoginDto) {
-    return this.authService.microsoftLogin(body);
+  async microsoftLoginAccount(
+    @Body() body: MicrosoftLoginDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const sharedCookieDomain =
+      this.serverConfigService.get<string>('SHARED_COOKIE_DOMAIN') ||
+      '.platform.sea.ac.ae';
+    const LoginResponse = await this.authService.microsoftLogin(body);
+
+    res.cookie(CONSTANTS.JWT.JWTCookieKey, LoginResponse.accessToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'none',
+      domain: sharedCookieDomain, // Share across subdomains
+      path: '/',
+      maxAge: 1000 * 60 * 60 * 24 * 30, // 30 days
+    });
+    return LoginResponse;
+  }
+
+  @Post('logout')
+  logout(@Res({ passthrough: true }) res: Response) {
+    const sharedCookieDomain =
+      this.serverConfigService.get<string>('SHARED_COOKIE_DOMAIN') ||
+      '.platform.sea.ac.ae';
+
+    res.cookie(CONSTANTS.JWT.JWTCookieKey, '', {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'none',
+      domain: sharedCookieDomain,
+      path: '/',
+      maxAge: 0, // Expire immediately
+    });
+
+    return true;
   }
 
   @Get('me')
