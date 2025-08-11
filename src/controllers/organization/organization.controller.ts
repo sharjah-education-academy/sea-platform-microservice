@@ -94,11 +94,6 @@ export class OrganizationController {
   }
 
   @Get('/list')
-  // @UseGuards(
-  //   new JWTAuthorizationGuard([
-  //     CONSTANTS.Permission.PermissionKeys.ManageOrganizationRead,
-  //   ]),
-  // )
   @ApiOperation({ summary: 'fetch all organizations' })
   @ApiResponse({
     status: 200,
