@@ -9,7 +9,9 @@
     "build": "nest build && npm run copy:keys",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
-    "start:dev": "nest start --watch && npm run copy:keys",
+    "start:dev:ignore": "nest start --watch && npm run copy:keys",
+    "start:dev": "concurrently --raw \"nest start --watch\" \"npm run copy:dev:keys\" \" npm run link:dev \" ",
+    "copy:dev:keys": "node ./scripts/copy-keys.js",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
@@ -18,7 +20,8 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "copy:keys": "cpy \"keys/**/*\" \"dist/keys\" --parents"
+    "copy:keys": "cpy \"keys/**/*\" \"dist/keys\" --parents",
+    "link:dev": "npm link sea-platform-helpers sea-backend-helpers"
   },
   "dependencies": {
     "@azure/msal-node": "^2.16.2",
@@ -63,6 +66,7 @@
     "@types/uuid": "^10.0.0",
     "@typescript-eslint/eslint-plugin": "^8.0.0",
     "@typescript-eslint/parser": "^8.0.0",
+    "concurrently": "^9.2.1",
     "cpy-cli": "^5.0.0",
     "eslint": "^8.0.0",
     "eslint-config-prettier": "^9.0.0",

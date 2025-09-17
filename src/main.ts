@@ -37,7 +37,9 @@ async function bootstrap() {
     .setVersion('1.0')
     .build();
   const documentFactory = () => SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api/docs', app, documentFactory);
+  SwaggerModule.setup('api/docs', app, documentFactory,{
+    customSiteTitle: 'SEA Platform Microservice',
+  });
 
   app.useGlobalPipes(
     new ValidationPipe({
