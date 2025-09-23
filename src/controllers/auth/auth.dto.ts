@@ -16,7 +16,7 @@ import { Decorators } from 'sea-backend-helpers';
 export class LoginDto {
   @ApiPropertyOptional({
     description: 'The email of the account',
-    example: 'john.doe@example.com',
+    example: 'platform-super-admin@sea.ac.ae',
   })
   @IsOptional()
   @Transform(({ value }) => Utils.String.normalizeString(value))
@@ -42,7 +42,7 @@ export class LoginDto {
 
   @ApiProperty({
     description: 'The password of the account',
-    example: 'SecurePassword123!',
+    example: '123456789',
   })
   @IsNotEmpty()
   @IsString()
