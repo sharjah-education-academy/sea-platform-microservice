@@ -10,4 +10,9 @@ export class SeederController {
   async seedInitData() {
     return await this.seederService.seedInitData();
   }
+
+  @Post('/seed-thesis-users')
+  async seedThesisUsers() {
+    return await this.seederService.seedThesisUsers();
+  }
 }

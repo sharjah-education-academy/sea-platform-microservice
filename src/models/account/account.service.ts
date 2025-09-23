@@ -19,6 +19,7 @@ import { Organization } from '../organization/organization.model';
 import { Department } from '../department/department.model';
 import { ApplicationService } from '../application/application.service';
 import { CONSTANTS } from 'sea-platform-helpers';
+import { AccountPermission } from '../account-permission/account-permission.model';
 
 @Injectable()
 export class AccountService {
@@ -246,6 +247,20 @@ export class AccountService {
     });
   }
 
+  async createOrUpdate(data: Attributes<Account>, roleIds: string[]) {
+    let account = await this.findOne({
+      where: { email: data.email },
+    });
+
+    if (account) {
+      account = await this.update(account, data, roleIds);
+    } else {
+      account = await this.create(data, roleIds);
+    }
+
+    return await account.save();
+  }
+
   async toggleLockStatus(account: Account) {
     account.isLocked = !account.isLocked;
     return await account.save();
@@ -371,5 +386,32 @@ export class AccountService {
       accountsResponse.push(AccountResponse);
     }
     return accountsResponse;
+  }
+
+  async makeAccountsFullResponse(accounts: Account[]) {
+    const accountsResponse: AccountFullResponse[] = [];
+    for (let i = 0; i < accounts.length; i++) {
+      const account = accounts[i];
+      const AccountResponse = await this.makeAccountFullResponse(account);
+      accountsResponse.push(AccountResponse);
+    }
+    return accountsResponse;
+  }
+
+  async getAccountsInPermissionKeys(permissionKeys: string[]) {
+    const accounts = await this.accountRepository.findAll({
+      include: [
+        {
+          model: AccountPermission,
+          as: 'accountPermissions',
+          where: {
+            permissionKey: {
+              [Op.in]: permissionKeys,
+            },
+          },
+        },
+      ],
+    });
+    return accounts;
   }
 }
