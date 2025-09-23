@@ -247,6 +247,20 @@ export class AccountService {
     });
   }
 
+  async createOrUpdate(data: Attributes<Account>, roleIds: string[]) {
+    let account = await this.findOne({
+      where: { email: data.email },
+    });
+
+    if (account) {
+      account = await this.update(account, data, roleIds);
+    } else {
+      account = await this.create(data, roleIds);
+    }
+
+    return await account.save();
+  }
+
   async toggleLockStatus(account: Account) {
     account.isLocked = !account.isLocked;
     return await account.save();

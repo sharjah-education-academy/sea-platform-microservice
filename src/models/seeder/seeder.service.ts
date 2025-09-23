@@ -1,10 +1,13 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { AccountService } from '../account/account.service';
 import { RoleService } from '../role/role.service';
 import { PermissionService } from '../permission/permission.service';
 import { ApplicationService } from '../application/application.service';
 import { CONSTANTS } from 'sea-platform-helpers';
 import { ServerConfigService } from '../server-config/server-config.service';
+import { Constants } from 'src/config';
+
+import ThesisData from '../../migration/thesis/data';
 
 @Injectable()
 export class SeederService {
@@ -99,68 +102,20 @@ export class SeederService {
     return await account.save();
   }
   async seedInitRoles() {
-    const DEFAULTS = [
-      {
-        name: 'Public Calendar | End user',
-        description:
-          'The default role of the end user for the public calendar app',
-        color: '#F4A610',
-        applicationKey:
-          CONSTANTS.Application.ApplicationKeys.PublicCalendarApplication,
-        permissionKeys: [
-          CONSTANTS.Permission.PermissionKeys.ViewPublicCalendar,
-        ],
-        isDefault: true,
-      },
-      {
-        name: 'Public Calendar | Super admin',
-        description:
-          'The default role of the super admin for the public calendar app',
-        color: '#F4A6A2',
-        applicationKey:
-          CONSTANTS.Application.ApplicationKeys.PublicCalendarApplication,
-        permissionKeys: await this.permissionService.getLeafKeys(
-          CONSTANTS.Permission.PermissionKeys.PublicCalendarApp,
-        ),
-        isDefault: false,
-      },
-      {
-        name: 'Faculty Operation | Chair',
-        description:
-          'The default role of the chair for the faculty operation app',
-        color: '#F4A6A2',
-        applicationKey:
-          CONSTANTS.Application.ApplicationKeys.FacultyOperationApplication,
-        permissionKeys: await this.permissionService.getLeafKeys(
-          CONSTANTS.Permission.PermissionKeys.FacultyOperationThesisChair,
-        ),
-        isDefault: false,
-      },
-      {
-        name: 'Faculty Operation | Faculty',
-        description:
-          'The default role of the faculty for the faculty operation app',
-        color: '#F4A6A2',
-        applicationKey:
-          CONSTANTS.Application.ApplicationKeys.FacultyOperationApplication,
-        permissionKeys: await this.permissionService.getLeafKeys(
-          CONSTANTS.Permission.PermissionKeys.FacultyOperationThesisFaculty,
-        ),
-        isDefault: false,
-      },
-      {
-        name: 'Faculty Operation | Student',
-        description:
-          'The default role of the student for the faculty operation app',
-        color: '#F4A6A2',
-        applicationKey:
-          CONSTANTS.Application.ApplicationKeys.FacultyOperationApplication,
-        permissionKeys: await this.permissionService.getLeafKeys(
-          CONSTANTS.Permission.PermissionKeys.FacultyOperationThesisStudent,
-        ),
-        isDefault: false,
-      },
-    ];
+    const DEFAULTS = await Promise.all(
+      Constants.Seeder.DEFAULT_ROLES.map(async (r) => {
+        return {
+          name: r.name,
+          description: r.description,
+          color: r.color,
+          applicationKey: r.applicationKey,
+          permissionKeys: await this.permissionService.getLeafKeys(
+            r.parentPermissionKey,
+          ),
+          isDefault: r.isDefault,
+        };
+      }),
+    );
 
     for (const roleData of DEFAULTS) {
       const data = {
@@ -203,5 +158,61 @@ export class SeederService {
     await this.seedSuperAdminAccount();
     await this.seedInitRoles();
     return true;
+  }
+
+  async seedThesisUsers() {
+    const studentRole = await this.roleService.findOne({
+      where: {
+        name: Constants.Seeder.DEFAULT_ROLE_NAMES.FacultyOperationStudent,
+      },
+    });
+    const facultyRole = await this.roleService.findOne({
+      where: {
+        name: Constants.Seeder.DEFAULT_ROLE_NAMES.FacultyOperationFaculty,
+      },
+    });
+
+    if (!studentRole || !facultyRole)
+      throw new BadRequestException(
+        'there is no student role or faculty role in the system, Seed them first and try again...',
+      );
+
+    for (let index = 0; index < ThesisData.length; index++) {
+      const data = ThesisData[index];
+
+      // create student
+      await this.accountService.createOrUpdate(
+        {
+          id: data.student.id,
+          name: data.student.name,
+          email: data.student.email,
+        },
+        [studentRole.id],
+      );
+
+      // create faculty from supervisor data
+      await this.accountService.createOrUpdate(
+        {
+          id: data.supervisor.id,
+          name: data.supervisor.name,
+          email: data.supervisor.email,
+        },
+        [facultyRole.id],
+      );
+
+      // create faculty from assigning data
+      for (let j = 0; j < data.thesisAssignings.length; j++) {
+        const assigningData = data.thesisAssignings[j];
+
+        await this.accountService.createOrUpdate(
+          {
+            id: assigningData.account.id,
+            name: assigningData.account.name,
+            email: assigningData.account.email,
+          },
+          [facultyRole.id],
+        );
+      }
+    }
   }
 }
