@@ -124,6 +124,42 @@ export class SeederService {
         ),
         isDefault: false,
       },
+      {
+        name: 'Faculty Operation | Chair',
+        description:
+          'The default role of the chair for the faculty operation app',
+        color: '#F4A6A2',
+        applicationKey:
+          CONSTANTS.Application.ApplicationKeys.FacultyOperationApplication,
+        permissionKeys: await this.permissionService.getLeafKeys(
+          CONSTANTS.Permission.PermissionKeys.FacultyOperationThesisChair,
+        ),
+        isDefault: false,
+      },
+      {
+        name: 'Faculty Operation | Faculty',
+        description:
+          'The default role of the faculty for the faculty operation app',
+        color: '#F4A6A2',
+        applicationKey:
+          CONSTANTS.Application.ApplicationKeys.FacultyOperationApplication,
+        permissionKeys: await this.permissionService.getLeafKeys(
+          CONSTANTS.Permission.PermissionKeys.FacultyOperationThesisFaculty,
+        ),
+        isDefault: false,
+      },
+      {
+        name: 'Faculty Operation | Student',
+        description:
+          'The default role of the student for the faculty operation app',
+        color: '#F4A6A2',
+        applicationKey:
+          CONSTANTS.Application.ApplicationKeys.FacultyOperationApplication,
+        permissionKeys: await this.permissionService.getLeafKeys(
+          CONSTANTS.Permission.PermissionKeys.FacultyOperationThesisStudent,
+        ),
+        isDefault: false,
+      },
     ];
 
     for (const roleData of DEFAULTS) {
