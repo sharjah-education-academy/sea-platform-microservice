@@ -408,7 +408,6 @@ export class AccountService {
     return accountsResponse;
   }
 
-  // TODO: fix removing the account permissions
   async getAccountsInPermissionKeys(permissionKeys: string[]) {
     const { roles } = await this.roleService.findAll({
       include: [
