@@ -4,7 +4,6 @@ import { RoleService } from 'src/models/role/role.service';
 import { roleProviders } from 'src/models/role/role.provider';
 import { PermissionModule } from './permission.module';
 import { RolePermissionModule } from './role-permission.module';
-import { AccountPermissionModule } from './account-permission.module';
 import { ApplicationModule } from './application.module';
 
 @Module({
@@ -12,7 +11,6 @@ import { ApplicationModule } from './application.module';
     DatabaseModule,
     PermissionModule,
     RolePermissionModule,
-    AccountPermissionModule,
     ApplicationModule,
   ],
   providers: [RoleService, ...roleProviders],

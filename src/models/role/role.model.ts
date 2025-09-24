@@ -12,7 +12,6 @@ import {
 } from 'sequelize-typescript';
 import { Account } from '../account/account.model';
 import { AccountRoles } from '../account-role/account-role.model';
-import { AccountPermission } from '../account-permission/account-permission.model';
 import { RolePermission } from '../role-permission/role-permission.model';
 import { Application } from '../application/application.model';
 
@@ -70,7 +69,4 @@ export class Role extends Model {
 
   @HasMany(() => RolePermission)
   rolePermissions: RolePermission[];
-
-  @HasMany(() => AccountPermission)
-  accountPermissions: AccountPermission[];
 }

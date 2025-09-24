@@ -15,7 +15,6 @@ import { StaticControllerModule } from './controllers/static/static.module';
 import { RoleModule } from './modules/role.module';
 import { RoleControllerModule } from './controllers/role/role-controller.module';
 import { RolePermissionModule } from './modules/role-permission.module';
-import { AccountPermissionModule } from './modules/account-permission.module';
 import { ApplicationModule } from './modules/application.module';
 import { ApplicationControllerModule } from './controllers/application/application.module';
 import { FileModule } from './modules/file.module';
@@ -51,7 +50,6 @@ import { EmailTemplateControllerModule } from './controllers/email-template/emai
     RoleModule,
     RoleControllerModule,
     RolePermissionModule,
-    AccountPermissionModule,
     ApplicationModule,
     ApplicationControllerModule,
     FileModule,

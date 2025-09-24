@@ -18,8 +18,8 @@ import { DepartmentService } from '../department/department.service';
 import { Organization } from '../organization/organization.model';
 import { Department } from '../department/department.model';
 import { ApplicationService } from '../application/application.service';
-import { CONSTANTS } from 'sea-platform-helpers';
-import { AccountPermission } from '../account-permission/account-permission.model';
+import { CONSTANTS, Utils } from 'sea-platform-helpers';
+import { RolePermission } from '../role-permission/role-permission.model';
 
 @Injectable()
 export class AccountService {
@@ -36,10 +36,18 @@ export class AccountService {
     return account.roles ? account.roles : await account.$get('roles');
   }
 
-  async getAccountPermissions(account: Account) {
-    return account.accountPermissions
-      ? account.accountPermissions
-      : await account.$get('accountPermissions');
+  async getAccountPermissionKeys(account: Account) {
+    const roles = await this.getAccountRoles(account);
+
+    const rolesPermissions = await Promise.all(
+      roles.map((r) => this.roleService.getRolePermissions(r)),
+    );
+
+    const permissions = rolesPermissions.flat();
+
+    const permissionKeys = permissions.map((p) => p.permissionKey);
+
+    return Utils.Array.removeDuplicates(permissionKeys, (a, b) => a === b);
   }
 
   async findAll(
@@ -349,8 +357,10 @@ export class AccountService {
   async makeAccountFullResponse(account: Account) {
     if (!account) return null;
     const accountResponse = await this.makeAccountShortResponse(account);
-    const accountPermissions = await this.getAccountPermissions(account);
-    const permissionKeys = accountPermissions.map((p) => p.permissionKey);
+
+    // const accountPermissions = await this.getAccountPermissions(account);
+    // const permissionKeys = accountPermissions.map((p) => p.permissionKey);
+    const permissionKeys = await this.getAccountPermissionKeys(account);
 
     const organization = account.organization
       ? account.organization
@@ -399,14 +409,30 @@ export class AccountService {
   }
 
   async getAccountsInPermissionKeys(permissionKeys: string[]) {
-    const accounts = await this.accountRepository.findAll({
+    const { roles } = await this.roleService.findAll({
       include: [
         {
-          model: AccountPermission,
-          as: 'accountPermissions',
+          model: RolePermission,
+          as: 'rolePermissions',
           where: {
             permissionKey: {
               [Op.in]: permissionKeys,
+            },
+          },
+        },
+      ],
+    });
+
+    const roleIds = roles.map((r) => r.id);
+
+    const accounts = await this.accountRepository.findAll({
+      include: [
+        {
+          model: Role,
+          as: 'roles',
+          where: {
+            id: {
+              [Op.in]: roleIds,
             },
           },
         },
