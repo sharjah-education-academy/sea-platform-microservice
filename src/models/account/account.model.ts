@@ -17,7 +17,6 @@ import { Utils } from 'sea-platform-helpers';
 import { OTP } from '../otp/otp.model';
 import { Role } from '../role/role.model';
 import { AccountRoles } from '../account-role/account-role.model';
-import { AccountPermission } from '../account-permission/account-permission.model';
 import { Utils as BackendUtils } from 'sea-backend-helpers';
 import { Department } from '../department/department.model';
 import { Organization } from '../organization/organization.model';
@@ -89,9 +88,6 @@ export class Account extends Model {
 
   @BelongsToMany(() => Role, () => AccountRoles)
   roles: Role[];
-
-  @HasMany(() => AccountPermission)
-  accountPermissions: AccountPermission[];
 
   @ForeignKey(() => Organization)
   @Column({

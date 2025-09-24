@@ -13,7 +13,6 @@ import { RoleShortArrayDataResponse } from 'src/controllers/role/role.dto';
 import { Op } from 'sequelize';
 import { Account } from '../account/account.model';
 import { RolePermissionService } from '../role-permission/role-permission.service';
-import { AccountPermissionService } from '../account-permission/account-permission.service';
 import { Sequelize } from 'sequelize-typescript';
 import { CONSTANTS } from 'sea-platform-helpers';
 import { ApplicationService } from '../application/application.service';
@@ -25,7 +24,6 @@ export class RoleService {
     private roleRepository: typeof Role,
     private readonly permissionService: PermissionService,
     private readonly rolePermissionService: RolePermissionService,
-    private readonly accountPermissionService: AccountPermissionService,
     private readonly applicationService: ApplicationService,
   ) {}
 
@@ -33,12 +31,6 @@ export class RoleService {
     return role.rolePermissions
       ? role.rolePermissions
       : await role.$get('rolePermissions');
-  }
-
-  async getAccountPermissions(role: Role) {
-    return role.accountPermissions
-      ? role.accountPermissions
-      : await role.$get('accountPermissions');
   }
 
   async getAccounts(role: Role) {
@@ -75,18 +67,6 @@ export class RoleService {
 
     await this.rolePermissionService.updateKeysForRole(role, permissionKeys);
 
-    // update the account permissions for all accounts has this role
-    const accounts = await this.getAccounts(role);
-    await Promise.all(
-      accounts.map((a) =>
-        this.accountPermissionService.updateKeysForAccount(
-          a,
-          role,
-          permissionKeys,
-        ),
-      ),
-    );
-
     return role;
   }
 
@@ -94,15 +74,13 @@ export class RoleService {
     options?: FindOptions<Attributes<Role>>,
     page: number = 1,
     limit: number = 10,
+    all = false,
   ) {
     if (page < 1) page = 1;
     const offset = (page - 1) * limit;
+    options = all ? options : { ...options, limit, offset };
     const { count: totalCount, rows: roles } =
-      await this.roleRepository.findAndCountAll({
-        ...options,
-        limit,
-        offset,
-      });
+      await this.roleRepository.findAndCountAll(options);
     return {
       totalCount,
       roles,
@@ -127,31 +105,10 @@ export class RoleService {
   }
 
   async assignRoleToAccount(account: Account, role: Role) {
-    const rolePermissions = await this.getRolePermissions(role);
-
-    await Promise.all(
-      rolePermissions.map(async (rp) => {
-        return await this.accountPermissionService.create({
-          accountId: account.id,
-          roleId: role.id,
-          permissionKey: rp.permissionKey,
-        });
-      }),
-    );
-
     return await account.$add('roles', role);
   }
 
   async unassignRoleFromAccount(account: Account, role: Role) {
-    const accountPermissions = await this.getAccountPermissions(role);
-
-    await Promise.all(
-      accountPermissions.map(async (ap) => {
-        return await this.accountPermissionService.delete(ap);
-      }),
-    );
-
-    // Remove the role from the account
     return await account.$remove('roles', role);
   }
 
