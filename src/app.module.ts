@@ -17,7 +17,6 @@ import { RoleControllerModule } from './controllers/role/role-controller.module'
 import { RolePermissionModule } from './modules/role-permission.module';
 import { ApplicationModule } from './modules/application.module';
 import { ApplicationControllerModule } from './controllers/application/application.module';
-import { FileModule } from './modules/file.module';
 import { OrganizationModule } from './modules/organization.module';
 import { OrganizationControllerModule } from './controllers/organization/organization-controller.module';
 import { DepartmentModule } from './modules/department.module';
@@ -49,7 +48,6 @@ import { RedisCacheModule } from './modules/redis-cache.module';
     RolePermissionModule,
     ApplicationModule,
     ApplicationControllerModule,
-    FileModule,
     OrganizationModule,
     OrganizationControllerModule,
     DepartmentModule,
