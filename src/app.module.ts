@@ -21,7 +21,6 @@ import { OrganizationModule } from './modules/organization.module';
 import { OrganizationControllerModule } from './controllers/organization/organization-controller.module';
 import { DepartmentModule } from './modules/department.module';
 import { ExternalOrganizationControllerModule } from './controllers/external/organization/external-organization-controller.module';
-import { EmailTemplateModule } from './modules/email-template.module';
 import { EmailTemplateControllerModule } from './controllers/email-template/email-template-controller.module';
 import { RedisCacheModule } from './modules/redis-cache.module';
 
@@ -52,7 +51,6 @@ import { RedisCacheModule } from './modules/redis-cache.module';
     OrganizationControllerModule,
     DepartmentModule,
     ExternalOrganizationControllerModule,
-    EmailTemplateModule,
     EmailTemplateControllerModule,
   ],
   controllers: [],
