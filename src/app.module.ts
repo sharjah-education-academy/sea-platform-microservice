@@ -22,9 +22,9 @@ import { OrganizationModule } from './modules/organization.module';
 import { OrganizationControllerModule } from './controllers/organization/organization-controller.module';
 import { DepartmentModule } from './modules/department.module';
 import { ExternalOrganizationControllerModule } from './controllers/external/organization/external-organization-controller.module';
-import { CacheModule } from '@nestjs/cache-manager';
 import { EmailTemplateModule } from './modules/email-template.module';
 import { EmailTemplateControllerModule } from './controllers/email-template/email-template-controller.module';
+import { RedisCacheModule } from './modules/redis-cache.module';
 
 @Module({
   imports: [
@@ -32,10 +32,7 @@ import { EmailTemplateControllerModule } from './controllers/email-template/emai
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-    CacheModule.register({
-      isGlobal: true, // optional: make cache available app-wide
-      ttl: 1000 * 3600, // cache time in milliseconds
-    }),
+    RedisCacheModule,
     ServerConfigModule,
     AccountModule,
     AuthModule,
