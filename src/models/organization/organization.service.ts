@@ -15,6 +15,8 @@ import { Op } from 'sequelize';
 import { Sequelize } from 'sequelize-typescript';
 import { DepartmentService } from '../department/department.service';
 import { Department } from '../department/department.model';
+import { Cache, CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Utils, Constants as BConstants } from 'sea-backend-helpers';
 
 @Injectable()
 export class OrganizationService {
@@ -23,6 +25,8 @@ export class OrganizationService {
     private organizationRepository: typeof Organization,
     @Inject(forwardRef(() => DepartmentService))
     private readonly departmentService: DepartmentService,
+    @Inject(CACHE_MANAGER)
+    private readonly cache: Cache,
   ) {}
 
   async findAll(
@@ -65,11 +69,26 @@ export class OrganizationService {
   }
 
   async update(organization: Organization, data: Attributes<Organization>) {
-    return await organization.update({ ...data });
+    return await organization.update({ ...data }).then(async (value) => {
+      Utils.Cache.updateIfExist(
+        value.id,
+        BConstants.Cache.CacheableModules.Organization,
+        await this.makeOrganizationResponse(value),
+        this.cache as any,
+      );
+      return value;
+    });
   }
 
   async delete(organization: Organization) {
-    return await organization.destroy({ force: true });
+    return await organization.destroy({ force: true }).then(() => {
+      Utils.Cache.deleteIfExist(
+        organization.id,
+        BConstants.Cache.CacheableModules.Organization,
+        this.cache as any,
+      );
+      return;
+    });
   }
 
   async makeOrganizationResponse(organization: Organization | undefined) {
