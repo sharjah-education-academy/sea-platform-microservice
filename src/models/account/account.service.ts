@@ -12,7 +12,10 @@ import { Op } from 'sequelize';
 import { RoleService } from '../role/role.service';
 import { Role } from '../role/role.model';
 import { AccountFullResponse, AccountShortResponse } from './account.dto';
-import { Utils as BackendUtils } from 'sea-backend-helpers';
+import {
+  Utils as BackendUtils,
+  Constants as BConstants,
+} from 'sea-backend-helpers';
 import { OrganizationService } from '../organization/organization.service';
 import { DepartmentService } from '../department/department.service';
 import { Organization } from '../organization/organization.model';
@@ -20,6 +23,8 @@ import { Department } from '../department/department.model';
 import { ApplicationService } from '../application/application.service';
 import { CONSTANTS, Utils } from 'sea-platform-helpers';
 import { RolePermission } from '../role-permission/role-permission.model';
+
+import { Cache, CACHE_MANAGER } from '@nestjs/cache-manager';
 
 @Injectable()
 export class AccountService {
@@ -30,6 +35,8 @@ export class AccountService {
     private readonly organizationService: OrganizationService,
     private readonly departmentService: DepartmentService,
     private readonly applicationService: ApplicationService,
+    @Inject(CACHE_MANAGER)
+    private readonly cache: Cache,
   ) {}
 
   async getAccountRoles(account: Account) {
@@ -248,11 +255,21 @@ export class AccountService {
       );
     }
 
-    return await account.update({
-      ...data,
-      organizationId: organization?.id ?? null,
-      departmentId: department?.id ?? null,
-    });
+    return await account
+      .update({
+        ...data,
+        organizationId: organization?.id ?? null,
+        departmentId: department?.id ?? null,
+      })
+      .then(async (value) => {
+        BackendUtils.Cache.updateIfExist(
+          value.id,
+          BConstants.Cache.CacheableModules.Account,
+          await this.makeAccountFullResponse(value),
+          this.cache as any,
+        );
+        return value;
+      });
   }
 
   async createOrUpdate(data: Attributes<Account>, roleIds: string[]) {
@@ -281,7 +298,14 @@ export class AccountService {
 
   async delete(account: Account) {
     // TODO // to be reviewed after finish
-    await account.destroy();
+    await account.destroy().then(() => {
+      BackendUtils.Cache.deleteIfExist(
+        account.id,
+        BConstants.Cache.CacheableModules.Account,
+        this.cache as any,
+      );
+      return;
+    });
   }
 
   async changePassword(

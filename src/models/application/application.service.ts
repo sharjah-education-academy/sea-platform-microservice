@@ -7,14 +7,19 @@ import { Op } from 'sequelize';
 import { Sequelize } from 'sequelize-typescript';
 import { ApplicationArrayDataResponse } from 'src/controllers/application/application.dto';
 import { CONSTANTS, DTO } from 'sea-platform-helpers';
-import { FileService } from '../file/file.service';
+import { Modules, Constants as BConstants } from 'sea-backend-helpers';
 
 @Injectable()
 export class ApplicationService {
   constructor(
     @Inject(Constants.Database.DatabaseRepositories.ApplicationRepository)
     private applicationRepository: typeof Application,
-    private fileService: FileService,
+    @Inject(
+      BConstants.Cache.getCacheModuleName(
+        BConstants.Cache.CacheableModules.File,
+      ),
+    )
+    private readonly fileManagerRemote: Modules.Remote.RemoteService,
   ) {}
 
   async findAll(
@@ -52,7 +57,9 @@ export class ApplicationService {
   async create(data: Attributes<Application>, iconFileId: string | undefined) {
     let file: DTO.File.IFile | undefined = undefined;
 
-    if (iconFileId) file = await this.fileService.checkFindById(iconFileId);
+    if (iconFileId)
+      file =
+        await this.fileManagerRemote.checkFindById<DTO.File.IFile>(iconFileId);
 
     const application = new Application({
       ...data,
@@ -67,7 +74,8 @@ export class ApplicationService {
     data: Attributes<Application>,
     iconFileId: string,
   ) {
-    const file = await this.fileService.checkFindById(iconFileId);
+    const file =
+      await this.fileManagerRemote.checkFindById<DTO.File.IFile>(iconFileId);
 
     return await application.update({ ...data, iconFileId: file.id });
   }
@@ -80,7 +88,9 @@ export class ApplicationService {
   }
 
   async makeApplicationResponse(application: Application) {
-    const file = await this.fileService.fetchById(application.iconFileId);
+    const file = await this.fileManagerRemote.fetchById<DTO.File.IFile>(
+      application.iconFileId,
+    );
 
     return new ApplicationResponse(application, file);
   }

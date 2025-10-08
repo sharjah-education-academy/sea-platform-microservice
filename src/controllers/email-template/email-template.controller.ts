@@ -17,7 +17,6 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 
-import { EmailTemplateService } from 'src/models/email-template/email-template.service';
 import {
   CreateEmailTemplateDto,
   CreateEmailTemplateVersionDto,
@@ -28,12 +27,17 @@ import {
 import { JWTAuthGuard } from 'src/guards/jwt-authentication.guard';
 import { JWTAuthorizationGuard } from 'src/guards/jwt-authorization.guard';
 import { CONSTANTS } from 'sea-platform-helpers';
+import { RemoteEmailTemplateService } from 'src/models/remote-email-template/remote-email-template.service';
+import { RemoteEmailTemplateVersionService } from 'src/models/remote-email-template/remote-email-template-version.service';
 
 @Controller('/email-templates')
 @ApiTags('Email Template')
 @UseGuards(JWTAuthGuard)
 export class EmailTemplateController {
-  constructor(private readonly emailTemplateService: EmailTemplateService) {}
+  constructor(
+    private readonly emailTemplateRemoteService: RemoteEmailTemplateService,
+    private readonly emailTemplateVersionRemoteService: RemoteEmailTemplateVersionService,
+  ) {}
 
   @Get()
   @UseGuards(
@@ -49,7 +53,7 @@ export class EmailTemplateController {
     isArray: true,
   })
   async findAll(@Query() query: FindAllEmailTemplatesDto) {
-    const response = await this.emailTemplateService.findAll(
+    const response = await this.emailTemplateRemoteService.findAll(
       query.page,
       query.limit,
       query.q,
@@ -70,7 +74,7 @@ export class EmailTemplateController {
   })
   @ApiBadRequestResponse({ description: 'Invalid input data' })
   async create(@Body() body: CreateEmailTemplateDto) {
-    const template = await this.emailTemplateService.create(body);
+    const template = await this.emailTemplateRemoteService.create(body);
 
     return template;
   }
@@ -88,7 +92,7 @@ export class EmailTemplateController {
   })
   @ApiBadRequestResponse({ description: 'Invalid input data' })
   async getOne(@Param('id') id: string) {
-    const template = await this.emailTemplateService.checkFindById(id);
+    const template = await this.emailTemplateRemoteService.checkFindById(id);
 
     return template;
   }
@@ -106,7 +110,8 @@ export class EmailTemplateController {
     isArray: true,
   })
   async getTemplateVersions(@Param('id') id: string) {
-    const templates = await this.emailTemplateService.fetchTemplateVersions(id);
+    const templates =
+      await this.emailTemplateVersionRemoteService.findAllForTemplate(id);
 
     return templates;
   }
@@ -124,7 +129,7 @@ export class EmailTemplateController {
   })
   @ApiBadRequestResponse({ description: 'Invalid input data' })
   async update(@Param('id') id: string, @Body() body: UpdateEmailTemplateDto) {
-    const template = await this.emailTemplateService.update(id, body);
+    const template = await this.emailTemplateRemoteService.update(id, body);
     return template;
   }
 
@@ -141,7 +146,7 @@ export class EmailTemplateController {
   })
   @ApiBadRequestResponse({ description: 'Invalid input data' })
   async delete(@Param('id') id: string) {
-    const template = await this.emailTemplateService.remove(id);
+    const template = await this.emailTemplateRemoteService.remove(id);
     return template;
   }
 
@@ -158,7 +163,7 @@ export class EmailTemplateController {
   })
   @ApiBadRequestResponse({ description: 'Invalid input data' })
   async createVersion(@Body() body: CreateEmailTemplateVersionDto) {
-    return await this.emailTemplateService.createVersion(body);
+    return await this.emailTemplateVersionRemoteService.create(body);
   }
 
   @Get('/versions/:id')
@@ -174,7 +179,9 @@ export class EmailTemplateController {
   })
   @ApiBadRequestResponse({ description: 'Invalid input data' })
   async getVersionDetails(@Param('id') id: string) {
-    return await this.emailTemplateService.checkVersionFindById(id);
+    return await this.emailTemplateVersionRemoteService.checkFindById(
+      `versions/${id}`,
+    );
   }
 
   @Put('/versions/:id')
@@ -193,7 +200,10 @@ export class EmailTemplateController {
     @Param('id') id: string,
     @Body() body: UpdateEmailTemplateVersionDto,
   ) {
-    return await this.emailTemplateService.updateVersion(id, body);
+    return await this.emailTemplateVersionRemoteService.update(
+      `versions/${id}`,
+      body,
+    );
   }
 
   @Delete('/versions/:id')
@@ -209,6 +219,8 @@ export class EmailTemplateController {
   })
   @ApiBadRequestResponse({ description: 'Invalid input data' })
   async deleteVersion(@Param('id') id: string) {
-    return await this.emailTemplateService.removeVersion(id);
+    return await this.emailTemplateVersionRemoteService.remove(
+      `versions/${id}`,
+    );
   }
 }
