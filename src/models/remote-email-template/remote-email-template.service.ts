@@ -63,46 +63,4 @@ export class RemoteEmailTemplateService {
       return null;
     }
   }
-
-  // async fetchTemplateVersions(id: string) {
-  //   return this.get<DTO.EmailTemplate.IEmailTemplateVersion[]>(
-  //     `/api/email-templates/${id}/versions`,
-  //   );
-  // }
-
-  // async fetchVersionById(id: string) {
-  //   const cacheKey = `email-template-version:${id}`;
-  //   const cached =
-  //     await this.cacheManager.get<DTO.EmailTemplate.IEmailTemplateVersion>(
-  //       cacheKey,
-  //     );
-  //   if (cached) return cached;
-
-  //   const version = await this.get<DTO.EmailTemplate.IEmailTemplateVersion>(
-  //     `/api/email-templates/versions/${id}`,
-  //   );
-  //   if (version) {
-  //     await this.cacheManager.set(cacheKey, version, 1000 * 60 * 60 * 24);
-  //   }
-  //   return version;
-  // }
-
-  // async checkVersionFindById(id: string) {
-  //   const version = await this.fetchVersionById(id);
-  //   if (!version)
-  //     throw new NotFoundException(`Email Template Version is not found!`);
-  //   return version;
-  // }
-
-  // async createVersion(body: CreateEmailTemplateVersionDto) {
-  //   return this.post(`/api/email-templates/versions`, body);
-  // }
-
-  // async updateVersion(id: string, body: UpdateEmailTemplateVersionDto) {
-  //   return this.put(`/api/email-templates/versions/${id}`, body);
-  // }
-
-  // async removeVersion(id: string) {
-  //   return this.delete(`/api/email-templates/versions/${id}`);
-  // }
 }
