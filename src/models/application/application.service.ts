@@ -7,14 +7,18 @@ import { Op } from 'sequelize';
 import { Sequelize } from 'sequelize-typescript';
 import { ApplicationArrayDataResponse } from 'src/controllers/application/application.dto';
 import { CONSTANTS, DTO } from 'sea-platform-helpers';
-import { Modules } from 'sea-backend-helpers';
+import { Modules, Constants as BConstants } from 'sea-backend-helpers';
 
 @Injectable()
 export class ApplicationService {
   constructor(
     @Inject(Constants.Database.DatabaseRepositories.ApplicationRepository)
     private applicationRepository: typeof Application,
-    @Inject('Remote-File')
+    @Inject(
+      BConstants.Cache.getCacheModuleName(
+        BConstants.Cache.CacheableModules.File,
+      ),
+    )
     private readonly fileManagerRemote: Modules.Remote.RemoteService,
   ) {}
 

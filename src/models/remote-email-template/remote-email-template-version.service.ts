@@ -5,13 +5,17 @@ import {
   CreateEmailTemplateVersionDto,
   UpdateEmailTemplateVersionDto,
 } from 'src/controllers/email-template/email-template.dto';
-import { Modules } from 'sea-backend-helpers';
+import { Modules, Constants as BConstants } from 'sea-backend-helpers';
 import { firstValueFrom } from 'rxjs';
 
 @Injectable()
 export class RemoteEmailTemplateVersionService {
   constructor(
-    @Inject('Remote-Email-Template-Version')
+    @Inject(
+      BConstants.Cache.getCacheModuleName(
+        BConstants.Cache.CacheableModules.EmailTemplateVersion,
+      ),
+    )
     private readonly remote: Modules.Remote.RemoteService,
   ) {}
 

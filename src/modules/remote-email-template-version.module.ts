@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { Modules } from 'sea-backend-helpers';
+import { Modules, Constants as BConstants } from 'sea-backend-helpers';
 import { ConfigService } from '@nestjs/config';
 import { Cache } from '@nestjs/cache-manager';
 import { RemoteEmailTemplateVersionService } from 'src/models/remote-email-template/remote-email-template-version.service';
@@ -7,7 +7,9 @@ import { RemoteEmailTemplateVersionService } from 'src/models/remote-email-templ
 @Module({
   imports: [
     Modules.Remote.RemoteModule.forFeatureAsync(
-      'Remote-Email-Template-Version',
+      BConstants.Cache.getCacheModuleName(
+        BConstants.Cache.CacheableModules.EmailTemplateVersion,
+      ),
       {
         inject: [ConfigService, Cache],
         useFactory: (config: ConfigService, cache: Cache) => ({
@@ -17,7 +19,7 @@ import { RemoteEmailTemplateVersionService } from 'src/models/remote-email-templ
             password: config.get<string>('CALL_EMAIL_TEMPLATE_CLIENT_SECRET'),
           },
           path: '/api/email-templates',
-          model: 'Email-Template-Version',
+          model: BConstants.Cache.CacheableModules.EmailTemplateVersion,
           cache: {
             get: (key) => cache.get(key),
             set: (key, value, ttl) => cache.set(key, value, ttl),
