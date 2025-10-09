@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 
 import { AccountService } from '../account/account.service';
@@ -12,6 +12,8 @@ import { Utils as BackendUtils } from 'sea-backend-helpers';
 import * as fs from 'fs';
 import * as path from 'path';
 import { RoleService } from '../role/role.service';
+import { Cache, CACHE_MANAGER } from '@nestjs/cache-manager';
+import * as ms from 'ms';
 @Injectable()
 export class AuthService {
   constructor(
@@ -19,9 +21,34 @@ export class AuthService {
     private readonly accountService: AccountService,
     private readonly microsoftAuthService: MicrosoftAuthService,
     private readonly roleService: RoleService,
+    @Inject(CACHE_MANAGER)
+    private readonly cache: Cache,
   ) {}
 
-  private async signToken(account: AccountFullResponse) {
+  private whitelistToken = (
+    accountId: string,
+    deviceId: string,
+    token: string,
+  ) => {
+    const expiresIn = JWTConfig.JWT_OPTIONS.expiresIn;
+    let ttlSeconds: number;
+
+    if (typeof expiresIn === 'string') {
+      ttlSeconds = Math.floor(ms(expiresIn)); // convert ms → seconds
+    } else {
+      ttlSeconds = expiresIn * 1000;
+    }
+
+    BackendUtils.Cache.set(
+      `${accountId}:${deviceId}`,
+      'Token',
+      token,
+      this.cache as any,
+      ttlSeconds,
+    );
+  };
+
+  private async signToken(account: AccountFullResponse, deviceId: string) {
     const privateKey = fs.readFileSync(
       path.join(__dirname, '..', '..', 'keys/private.pem'),
     );
@@ -39,10 +66,12 @@ export class AuthService {
       },
     );
 
+    this.whitelistToken(account.id, deviceId, token);
+
     return token;
   }
 
-  async login(data: LoginDto) {
+  async login(data: LoginDto, deviceId: string) {
     const { email, phoneNumber, password } = data;
 
     let identifier: string;
@@ -72,12 +101,12 @@ export class AuthService {
     const accountResponse =
       await this.accountService.makeAccountFullResponse(account);
 
-    const token = await this.signToken(accountResponse);
+    const token = await this.signToken(accountResponse, deviceId);
 
     return this.makeLoginResponse(token, accountResponse);
   }
 
-  async microsoftLogin(data: MicrosoftLoginDto) {
+  async microsoftLogin(data: MicrosoftLoginDto, deviceId: string) {
     const { idToken } = data;
 
     const { email, name } =
@@ -110,9 +139,17 @@ export class AuthService {
     const accountResponse =
       await this.accountService.makeAccountFullResponse(account);
 
-    const token = await this.signToken(accountResponse);
+    const token = await this.signToken(accountResponse, deviceId);
 
     return this.makeLoginResponse(token, accountResponse);
+  }
+
+  async logout(accountId: string, deviceId: string) {
+    BackendUtils.Cache.deleteIfExist(
+      `${accountId}:${deviceId}`,
+      'Token',
+      this.cache as any,
+    );
   }
 
   makeLoginResponse(accessToken: string, account: AccountFullResponse) {

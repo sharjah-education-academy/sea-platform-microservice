@@ -4,6 +4,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
 import * as cookieParser from 'cookie-parser';
 import { ServerConfigService } from './models/server-config/server-config.service';
+import { CONSTANTS } from 'sea-platform-helpers';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -17,6 +18,11 @@ async function bootstrap() {
   app.enableCors({
     origin,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    allowedHeaders: [
+      'Content-Type',
+      'Authorization',
+      CONSTANTS.Server.DEVICE_ID_HEADER_KEY,
+    ],
     credentials: true,
   });
   app.use(cookieParser());
@@ -37,7 +43,7 @@ async function bootstrap() {
     .setVersion('1.0')
     .build();
   const documentFactory = () => SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api/docs', app, documentFactory,{
+  SwaggerModule.setup('api/docs', app, documentFactory, {
     customSiteTitle: 'SEA Platform Microservice',
   });
 
