@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  forwardRef,
   Inject,
   Injectable,
   NotFoundException,
@@ -16,6 +17,7 @@ import { RolePermissionService } from '../role-permission/role-permission.servic
 import { Sequelize } from 'sequelize-typescript';
 import { CONSTANTS } from 'sea-platform-helpers';
 import { ApplicationService } from '../application/application.service';
+import { AuthService } from '../auth/auth.service';
 
 @Injectable()
 export class RoleService {
@@ -25,6 +27,8 @@ export class RoleService {
     private readonly permissionService: PermissionService,
     private readonly rolePermissionService: RolePermissionService,
     private readonly applicationService: ApplicationService,
+    @Inject(forwardRef(() => AuthService))
+    private readonly authService: AuthService,
   ) {}
 
   async getRolePermissions(role: Role) {
@@ -65,7 +69,9 @@ export class RoleService {
   ) {
     role = await role.update({ ...data });
 
-    await this.rolePermissionService.updateKeysForRole(role, permissionKeys);
+    const { permissionsUpdated } =
+      await this.rolePermissionService.updateKeysForRole(role, permissionKeys);
+    if (permissionsUpdated) this.authService.invalidateTokensForRole(role);
 
     return role;
   }
@@ -208,6 +214,8 @@ export class RoleService {
     );
 
     // Delete the role itself
-    return await role.destroy({ force: true });
+    return await role.destroy({ force: true }).then(() => {
+      this.authService.invalidateTokensForRole(role);
+    });
   }
 }

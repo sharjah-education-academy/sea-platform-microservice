@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  Headers,
   Post,
   Put,
   Request,
@@ -10,6 +11,7 @@ import {
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
+  ApiHeader,
   ApiOkResponse,
   ApiOperation,
   ApiTags,
@@ -36,6 +38,8 @@ import { Role } from 'src/models/role/role.model';
 import { ApplicationService } from 'src/models/application/application.service';
 import { Response } from 'express';
 import { ServerConfigService } from 'src/models/server-config/server-config.service';
+import { JWTConfig } from 'src/config';
+import * as ms from 'ms';
 
 @Controller('auth')
 @ApiTags('Internal', 'Auth')
@@ -50,6 +54,11 @@ export class AuthController {
 
   @Post('login')
   @ApiOperation({ summary: 'Account login with email or phone number' })
+  @ApiHeader({
+    name: CONSTANTS.Server.DEVICE_ID_HEADER_KEY,
+    description: 'Unique device identifier',
+    required: true,
+  })
   @ApiOkResponse({
     description: 'The account has been successfully logged in.',
     type: LoginResponse,
@@ -58,25 +67,42 @@ export class AuthController {
   async login(
     @Body() body: LoginDto,
     @Res({ passthrough: true }) res: Response,
+    @Headers(CONSTANTS.Server.DEVICE_ID_HEADER_KEY)
+    deviceId: string = CONSTANTS.Server.DEFAULT_DEVICE_ID,
   ) {
     const sharedCookieDomain =
       this.serverConfigService.get<string>('SHARED_COOKIE_DOMAIN') ||
       '.platform.sea.ac.ae';
 
-    const LoginResponse = await this.authService.login(body);
+    const LoginResponse = await this.authService.login(body, deviceId);
+
+    const expiresIn = JWTConfig.JWT_OPTIONS.expiresIn;
+    let ttlSeconds: number;
+
+    if (typeof expiresIn === 'string') {
+      ttlSeconds = Math.floor(ms(expiresIn));
+    } else {
+      ttlSeconds = expiresIn * 1000;
+    }
+
     res.cookie(CONSTANTS.JWT.JWTCookieKey, LoginResponse.accessToken, {
       httpOnly: false,
       secure: true,
       sameSite: 'none',
       domain: sharedCookieDomain, // Share across subdomains
       path: '/',
-      maxAge: 1000 * 60 * 60 * 24 * 30, // 30 days
+      maxAge: ttlSeconds,
     });
     return LoginResponse;
   }
 
   @Post('/microsoft/login')
   @ApiOperation({ summary: 'Account login with microsoft account' })
+  @ApiHeader({
+    name: CONSTANTS.Server.DEVICE_ID_HEADER_KEY,
+    description: 'Unique device identifier',
+    required: true,
+  })
   @ApiOkResponse({
     description: 'The account has been successfully logged in.',
     type: LoginResponse,
@@ -85,11 +111,22 @@ export class AuthController {
   async microsoftLoginAccount(
     @Body() body: MicrosoftLoginDto,
     @Res({ passthrough: true }) res: Response,
+    @Headers(CONSTANTS.Server.DEVICE_ID_HEADER_KEY)
+    deviceId: string = CONSTANTS.Server.DEFAULT_DEVICE_ID,
   ) {
     const sharedCookieDomain =
       this.serverConfigService.get<string>('SHARED_COOKIE_DOMAIN') ||
       '.platform.sea.ac.ae';
-    const LoginResponse = await this.authService.microsoftLogin(body);
+    const LoginResponse = await this.authService.microsoftLogin(body, deviceId);
+
+    const expiresIn = JWTConfig.JWT_OPTIONS.expiresIn;
+    let ttlSeconds: number;
+
+    if (typeof expiresIn === 'string') {
+      ttlSeconds = Math.floor(ms(expiresIn));
+    } else {
+      ttlSeconds = expiresIn * 1000;
+    }
 
     res.cookie(CONSTANTS.JWT.JWTCookieKey, LoginResponse.accessToken, {
       httpOnly: false,
@@ -97,16 +134,30 @@ export class AuthController {
       sameSite: 'none',
       domain: sharedCookieDomain, // Share across subdomains
       path: '/',
-      maxAge: 1000 * 60 * 60 * 24 * 30, // 30 days
+      maxAge: ttlSeconds,
     });
     return LoginResponse;
   }
 
   @Post('logout')
-  logout(@Res({ passthrough: true }) res: Response) {
+  @UseGuards(JWTAuthGuard)
+  @ApiHeader({
+    name: CONSTANTS.Server.DEVICE_ID_HEADER_KEY,
+    description: 'Unique device identifier',
+    required: true,
+  })
+  logout(
+    @Res({ passthrough: true }) res: Response,
+    @Request() req: DTO.Request.AuthorizedRequest,
+    @Headers(CONSTANTS.Server.DEVICE_ID_HEADER_KEY)
+    deviceId: string = CONSTANTS.Server.DEFAULT_DEVICE_ID,
+  ) {
+    const { id: accountId } = req.context;
     const sharedCookieDomain =
       this.serverConfigService.get<string>('SHARED_COOKIE_DOMAIN') ||
       '.platform.sea.ac.ae';
+
+    this.authService.logout(accountId, deviceId);
 
     res.cookie(CONSTANTS.JWT.JWTCookieKey, '', {
       httpOnly: false,
