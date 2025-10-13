@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
-import { Utils } from 'sea-backend-helpers';
+import { Types, Utils } from 'sea-backend-helpers';
 import { CONSTANTS, DTO } from 'sea-platform-helpers';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -42,12 +42,16 @@ export class JWTAuthGuard implements CanActivate {
 
     if (!success) throw new UnauthorizedException(message);
 
-    const cachedToken = await Utils.Cache.get(
-      `${payload.id}:${deviceId}`,
+    const deviceTokens = await Utils.Cache.get<Record<string, string>>(
+      payload.id,
       'Token',
       this.cache as any,
     );
-    if (!cachedToken || cachedToken !== token) {
+    if (
+      !deviceTokens ||
+      !deviceTokens[deviceId] ||
+      deviceTokens[deviceId] !== token
+    ) {
       throw new UnauthorizedException(
         CONSTANTS.Server.ERROR_MESSAGES.REVOKED_TOKEN,
       );

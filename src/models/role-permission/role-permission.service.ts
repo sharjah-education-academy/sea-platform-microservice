@@ -90,5 +90,9 @@ export class RolePermissionService {
 
       await Promise.all(permissionsToRemove.map((p) => this.delete(p)));
     }
+
+    return {
+      permissionsUpdated: keysToAdd.length !== 0 || keysToRemove.length !== 0,
+    };
   }
 }
