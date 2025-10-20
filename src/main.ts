@@ -31,6 +31,7 @@ async function bootstrap() {
     .setTitle('SEA Platform Microservice')
     .setDescription('API Docs of the SEA Platform Microservice application')
     // .addBearerAuth()
+    .setVersion('1.0')
     .addApiKey(
       {
         type: 'apiKey',
@@ -40,7 +41,6 @@ async function bootstrap() {
       },
       'sea-platform-jwt', // name of the security scheme
     )
-    .setVersion('1.0')
     .build();
   const documentFactory = () => SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/docs', app, documentFactory, {
