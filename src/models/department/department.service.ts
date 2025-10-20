@@ -29,15 +29,14 @@ export class DepartmentService {
     options?: FindOptions<Attributes<Department>>,
     page: number = 1,
     limit: number = 10,
+    all = false,
   ) {
     if (page < 1) page = 1;
     const offset = (page - 1) * limit;
+
+    options = all ? options : { ...options, limit, offset };
     const { count: totalCount, rows: departments } =
-      await this.departmentRepository.findAndCountAll({
-        ...options,
-        limit,
-        offset,
-      });
+      await this.departmentRepository.findAndCountAll(options);
     return {
       totalCount,
       departments,
