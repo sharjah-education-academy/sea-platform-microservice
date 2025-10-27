@@ -22,6 +22,25 @@ export class ExternalOrganizationController {
     private readonly departmentService: DepartmentService,
   ) {}
 
+  @Get('/departments')
+  @ApiOperation({ summary: 'get departments list' })
+  @ApiOkResponse({
+    description: 'departments fetched successfully',
+    type: DepartmentResponse,
+    isArray: true,
+  })
+  async fetchDepartments() {
+    const { departments } = await this.departmentService.findAll(
+      {},
+      0,
+      0,
+      true,
+    );
+    const departmentsResponse =
+      await this.departmentService.makeDepartmentsResponse(departments);
+    return departmentsResponse;
+  }
+
   @Get('/:id')
   @ApiOperation({ summary: 'get organization details' })
   @ApiParam({

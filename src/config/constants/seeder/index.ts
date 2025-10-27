@@ -1,14 +1,27 @@
 import { CONSTANTS } from 'sea-platform-helpers';
 
 export const DEFAULT_ROLE_NAMES = {
+  PlatformAdministration: 'Platform Administrator',
   PublicCalendarEndUser: 'Public Calendar | End user',
   PublicCalendarSuperAdmin: 'Public Calendar | Super admin',
   FacultyOperationChair: 'Faculty Operation | Chair',
   FacultyOperationFaculty: 'Faculty Operation | Faculty',
   FacultyOperationStudent: 'Faculty Operation | Student',
+  StrategySuperAdmin: 'Strategy | Super admin',
 };
 
 export const DEFAULT_ROLES = [
+  {
+    name: DEFAULT_ROLE_NAMES.PlatformAdministration,
+    description: 'The default role of the platform administrator',
+    color: '#F4A610',
+    applicationKey:
+      CONSTANTS.Application.ApplicationKeys.PlatformAdministrationApplication,
+    parentPermissionKey:
+      CONSTANTS.Permission.PermissionKeys.PlatformAdministration,
+    isDefault: false,
+    isDeletable: false,
+  },
   {
     name: DEFAULT_ROLE_NAMES.PublicCalendarEndUser,
     description: 'The default role of the end user for the public calendar app',
@@ -17,6 +30,7 @@ export const DEFAULT_ROLES = [
       CONSTANTS.Application.ApplicationKeys.PublicCalendarApplication,
     parentPermissionKey: CONSTANTS.Permission.PermissionKeys.ViewPublicCalendar,
     isDefault: true,
+    isDeletable: false,
   },
   {
     name: DEFAULT_ROLE_NAMES.PublicCalendarSuperAdmin,
@@ -27,6 +41,7 @@ export const DEFAULT_ROLES = [
       CONSTANTS.Application.ApplicationKeys.PublicCalendarApplication,
     parentPermissionKey: CONSTANTS.Permission.PermissionKeys.PublicCalendarApp,
     isDefault: false,
+    isDeletable: false,
   },
   {
     name: DEFAULT_ROLE_NAMES.FacultyOperationChair,
@@ -37,6 +52,7 @@ export const DEFAULT_ROLES = [
     parentPermissionKey:
       CONSTANTS.Permission.PermissionKeys.FacultyOperationThesisChair,
     isDefault: false,
+    isDeletable: false,
   },
   {
     name: DEFAULT_ROLE_NAMES.FacultyOperationFaculty,
@@ -48,6 +64,7 @@ export const DEFAULT_ROLES = [
     parentPermissionKey:
       CONSTANTS.Permission.PermissionKeys.FacultyOperationThesisFaculty,
     isDefault: false,
+    isDeletable: false,
   },
   {
     name: DEFAULT_ROLE_NAMES.FacultyOperationStudent,
@@ -59,5 +76,15 @@ export const DEFAULT_ROLES = [
     parentPermissionKey:
       CONSTANTS.Permission.PermissionKeys.FacultyOperationThesisStudent,
     isDefault: false,
+    isDeletable: false,
+  },
+  {
+    name: DEFAULT_ROLE_NAMES.StrategySuperAdmin,
+    description: 'The default role of the super admin for the strategy app',
+    color: '#1e4153ff',
+    applicationKey: CONSTANTS.Application.ApplicationKeys.StrategyApplication,
+    parentPermissionKey: CONSTANTS.Permission.PermissionKeys.StrategyApp,
+    isDefault: false,
+    isDeletable: false,
   },
 ];

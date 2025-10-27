@@ -8,6 +8,8 @@ import { ServerConfigService } from '../server-config/server-config.service';
 import { Constants } from 'src/config';
 
 import ThesisData from '../../migration/thesis/data';
+import { Op } from 'sequelize';
+import { DEFAULT_ROLE_NAMES } from 'src/config/constants/seeder';
 
 @Injectable()
 export class SeederService {
@@ -42,43 +44,25 @@ export class SeederService {
     return 'Applications seeded successfully';
   }
 
-  private async seedSuperAdminRole() {
-    const permissionKeys = await this.permissionService.getLeafKeys(
-      CONSTANTS.Permission.PermissionKeys.PlatformAdministration,
+  async seedSuperAdminAccount() {
+    const { roles } = await this.roleService.findAll(
+      {
+        where: {
+          name: {
+            [Op.in]: [
+              DEFAULT_ROLE_NAMES.PlatformAdministration,
+              DEFAULT_ROLE_NAMES.PublicCalendarSuperAdmin,
+              DEFAULT_ROLE_NAMES.FacultyOperationChair,
+              DEFAULT_ROLE_NAMES.StrategySuperAdmin,
+            ],
+          },
+        },
+      },
+      0,
+      0,
+      true,
     );
 
-    const data = {
-      name: 'Super Admin Role',
-      description: 'Super Admin Role',
-      color: '#F2B3A0',
-      isDefault: false,
-      isDeletable: false,
-    };
-
-    let role = await this.roleService.findOne({
-      where: {
-        name: data.name,
-        isDefault: data.isDefault,
-        isDeletable: data.isDeletable,
-      },
-    });
-
-    if (role) {
-      role = await this.roleService.update(role, data, permissionKeys);
-    } else {
-      role = await this.roleService.create(
-        data,
-        permissionKeys,
-
-        CONSTANTS.Application.ApplicationKeys.PlatformAdministrationApplication,
-      );
-    }
-
-    return await role.save();
-  }
-
-  async seedSuperAdminAccount() {
-    const superAdminRole = await this.seedSuperAdminRole();
     const data = {
       name: 'Platform Super Admin',
       email:
@@ -91,16 +75,17 @@ export class SeederService {
       where: { email: data.email },
     });
 
+    const roleIds = roles.map((r) => r.id);
+
     if (account) {
-      account = await this.accountService.update(account, data, [
-        superAdminRole.id,
-      ]);
+      account = await this.accountService.update(account, data, roleIds);
     } else {
-      account = await this.accountService.create(data, [superAdminRole.id]);
+      account = await this.accountService.create(data, roleIds);
     }
 
     return await account.save();
   }
+
   async seedInitRoles() {
     const DEFAULTS = await Promise.all(
       Constants.Seeder.DEFAULT_ROLES.map(async (r) => {
@@ -113,6 +98,7 @@ export class SeederService {
             r.parentPermissionKey,
           ),
           isDefault: r.isDefault,
+          isDeletable: r.isDeletable,
         };
       }),
     );
@@ -123,7 +109,7 @@ export class SeederService {
         description: roleData.description,
         color: roleData.color,
         isDefault: roleData.isDefault,
-        isDeletable: false,
+        isDeletable: roleData.isDeletable,
       };
 
       let role = await this.roleService.findOne({
@@ -155,8 +141,8 @@ export class SeederService {
 
   async seedInitData() {
     await this.seedApplications();
-    await this.seedSuperAdminAccount();
     await this.seedInitRoles();
+    await this.seedSuperAdminAccount();
     return true;
   }
 

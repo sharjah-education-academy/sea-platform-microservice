@@ -326,6 +326,7 @@ export class AccountService {
 
     account.password = newPassword;
     await account.save();
+    BackendUtils.Cache.deleteIfExist(account.id, 'Token', this.cache as any);
     return true;
   }
 
