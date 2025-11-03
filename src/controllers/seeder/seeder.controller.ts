@@ -15,4 +15,8 @@ export class SeederController {
   async seedThesisUsers() {
     return await this.seederService.seedThesisUsers();
   }
+  @Post('/seed-email-templates')
+  async seedEmailTemplates() {
+    return await this.seederService.seedEmailTemplates();
+  }
 }

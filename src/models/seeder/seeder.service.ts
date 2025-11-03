@@ -10,6 +10,8 @@ import { Constants } from 'src/config';
 import ThesisData from '../../migration/thesis/data';
 import { Op } from 'sequelize';
 import { DEFAULT_ROLE_NAMES } from 'src/config/constants/seeder';
+import { RemoteEmailTemplateService } from '../remote-email-template/remote-email-template.service';
+import { RemoteEmailTemplateVersionService } from '../remote-email-template/remote-email-template-version.service';
 
 @Injectable()
 export class SeederService {
@@ -18,6 +20,8 @@ export class SeederService {
     private readonly roleService: RoleService,
     private readonly permissionService: PermissionService,
     private readonly applicationService: ApplicationService,
+    private readonly emailTemplateRemote: RemoteEmailTemplateService,
+    private readonly emailTemplateVersionRemote: RemoteEmailTemplateVersionService,
     private readonly serverConfigService: ServerConfigService,
   ) {}
 
@@ -42,6 +46,57 @@ export class SeederService {
     }
 
     return 'Applications seeded successfully';
+  }
+
+  async seedEmailTemplates() {
+    console.log('seedEmailTemplates');
+    for (const email of CONSTANTS.Email.EmailTemplates) {
+      let existingEmail = await this.emailTemplateRemote.findByCode(email.code);
+      console.log('existingEmail: ', existingEmail);
+      const data = {
+        name: email.name,
+        description: email.description,
+        code: email.code,
+        parameters: email.parameters,
+      };
+
+      if (!existingEmail) {
+        existingEmail = await this.emailTemplateRemote.create(data);
+      } else {
+        existingEmail = await this.emailTemplateRemote.update(
+          existingEmail.id,
+          data,
+        );
+      }
+
+      const versions = await this.emailTemplateVersionRemote.findAllForTemplate(
+        existingEmail.id,
+      );
+
+      for (const version of email.versions) {
+        const existingVersion = versions.find(
+          (v) => v.languageCode === version.languageCode,
+        );
+
+        if (!existingVersion) {
+          await this.emailTemplateVersionRemote.create({
+            templateId: existingEmail.id,
+            subject: version.subject,
+            languageCode: version.languageCode,
+            design: version.design,
+            html: version.html,
+          });
+        } else {
+          await this.emailTemplateVersionRemote.update(existingVersion.id, {
+            subject: version.subject,
+            design: version.design,
+            html: version.html,
+          });
+        }
+      }
+    }
+
+    return 'Email Templates seeded successfully';
   }
 
   async seedSuperAdminAccount() {
@@ -143,6 +198,7 @@ export class SeederService {
     await this.seedApplications();
     await this.seedInitRoles();
     await this.seedSuperAdminAccount();
+    await this.seedEmailTemplates();
     return true;
   }
 
