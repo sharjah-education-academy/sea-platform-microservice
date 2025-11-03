@@ -23,6 +23,7 @@ import { DepartmentModule } from './modules/department.module';
 import { ExternalOrganizationControllerModule } from './controllers/external/organization/external-organization-controller.module';
 import { EmailTemplateControllerModule } from './controllers/email-template/email-template-controller.module';
 import { RedisCacheModule } from './modules/redis-cache.module';
+import { QueueModule } from './queue/queue.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { RedisCacheModule } from './modules/redis-cache.module';
     }),
     RedisCacheModule,
     ServerConfigModule,
+    QueueModule,
     AccountModule,
     AuthModule,
     MicrosoftAuthModule,
