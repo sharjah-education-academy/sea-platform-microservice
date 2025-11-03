@@ -83,6 +83,12 @@ export class Account extends Model {
   })
   isLocked: boolean;
 
+  @Column({
+    type: DataType.STRING,
+    defaultValue: CONSTANTS.Account.DEFAULT_PREFERRED_LANGUAGE_CODE,
+  })
+  preferredLanguage: string;
+
   @HasMany(() => OTP)
   OTPs: OTP[];
 

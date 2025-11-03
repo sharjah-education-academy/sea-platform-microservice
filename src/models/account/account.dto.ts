@@ -26,6 +26,9 @@ export class AccountShortResponse {
   organization: OrganizationResponse | undefined;
   @ApiProperty({ type: DepartmentResponse, nullable: true })
   department: DepartmentResponse | undefined;
+  @ApiProperty()
+  preferredLanguage: string;
+
   constructor(
     account: Account,
     roles: RoleShortResponse[],
@@ -36,6 +39,7 @@ export class AccountShortResponse {
     this.name = account.name;
     this.email = account.email;
     this.phoneNumber = account.phoneNumber;
+    this.preferredLanguage = account.preferredLanguage;
     this.birthDate = null;
     if (account.birthDate) {
       this.birthDate = Utils.Moment.formatDate(account.birthDate, 'YYYY-MM-DD');

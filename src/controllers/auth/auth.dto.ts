@@ -185,6 +185,14 @@ export class UpdateMyAccountDto {
   name: string;
 
   @ApiProperty({
+    description: 'The language code for the preferred language',
+    example: 'John Doe',
+  })
+  @IsString()
+  @IsIn(Utils.Language.getLanguageCodes())
+  preferredLanguage: string;
+
+  @ApiProperty({
     description: 'The birth date of the account in ISO format',
     example: '2000-01-01',
     required: false,
