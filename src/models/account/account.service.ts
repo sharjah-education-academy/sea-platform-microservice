@@ -385,8 +385,6 @@ export class AccountService {
     if (!account) return null;
     const accountResponse = await this.makeAccountShortResponse(account);
 
-    // const accountPermissions = await this.getAccountPermissions(account);
-    // const permissionKeys = accountPermissions.map((p) => p.permissionKey);
     const permissionKeys = await this.getAccountPermissionKeys(account);
 
     const organization = account.organization
