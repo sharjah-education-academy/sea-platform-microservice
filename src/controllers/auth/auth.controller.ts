@@ -67,14 +67,24 @@ export class AuthController {
   async login(
     @Body() body: LoginDto,
     @Res({ passthrough: true }) res: Response,
+    @Req() req: Request,
     @Headers(CONSTANTS.Server.DEVICE_ID_HEADER_KEY)
     deviceId: string = CONSTANTS.Server.DEFAULT_DEVICE_ID,
+    @Headers(CONSTANTS.Server.USER_AGENT_HEADER_KEY)
+    userAgent: string = CONSTANTS.Server.DEFAULT_USER_AGENT,
   ) {
+    const { clientIp } = req as any;
+
     const sharedCookieDomain =
       this.serverConfigService.get<string>('SHARED_COOKIE_DOMAIN') ||
       '.platform.sea.ac.ae';
 
-    const LoginResponse = await this.authService.login(body, deviceId);
+    const LoginResponse = await this.authService.login(
+      body,
+      deviceId,
+      userAgent,
+      clientIp,
+    );
 
     const expiresIn = JWTConfig.JWT_OPTIONS.expiresIn;
     let ttlSeconds: number;
@@ -110,14 +120,23 @@ export class AuthController {
   @ApiUnauthorizedResponse({ description: 'The Id Token is invalid' })
   async microsoftLoginAccount(
     @Body() body: MicrosoftLoginDto,
+    @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
     @Headers(CONSTANTS.Server.DEVICE_ID_HEADER_KEY)
     deviceId: string = CONSTANTS.Server.DEFAULT_DEVICE_ID,
+    @Headers(CONSTANTS.Server.USER_AGENT_HEADER_KEY)
+    userAgent: string = CONSTANTS.Server.DEFAULT_USER_AGENT,
   ) {
+    const { clientIp } = req as any;
     const sharedCookieDomain =
       this.serverConfigService.get<string>('SHARED_COOKIE_DOMAIN') ||
       '.platform.sea.ac.ae';
-    const LoginResponse = await this.authService.microsoftLogin(body, deviceId);
+    const LoginResponse = await this.authService.microsoftLogin(
+      body,
+      deviceId,
+      userAgent,
+      clientIp,
+    );
 
     const expiresIn = JWTConfig.JWT_OPTIONS.expiresIn;
     let ttlSeconds: number;
@@ -148,7 +167,7 @@ export class AuthController {
   })
   logout(
     @Res({ passthrough: true }) res: Response,
-    @Request() req: DTO.Request.AuthorizedRequest,
+    @Req() req: DTO.Request.AuthorizedRequest,
     @Headers(CONSTANTS.Server.DEVICE_ID_HEADER_KEY)
     deviceId: string = CONSTANTS.Server.DEFAULT_DEVICE_ID,
   ) {
@@ -179,9 +198,7 @@ export class AuthController {
     type: AccountFullResponse,
   })
   @ApiUnauthorizedResponse({ description: 'Invalid token' })
-  async fetchLoggedAccountDetails(
-    @Request() req: DTO.Request.AuthorizedRequest,
-  ) {
+  async fetchLoggedAccountDetails(@Req() req: DTO.Request.AuthorizedRequest) {
     const accountId = req.context.id;
     const account = await this.accountService.checkIsFound({
       where: { id: accountId },
@@ -198,7 +215,7 @@ export class AuthController {
   })
   @ApiUnauthorizedResponse({ description: 'Invalid token' })
   async updateLoggedAccountDetails(
-    @Request() req: DTO.Request.AuthorizedRequest,
+    @Req() req: DTO.Request.AuthorizedRequest,
     @Body() body: UpdateMyAccountDto,
   ) {
     const accountId = req.context.id;
@@ -220,7 +237,7 @@ export class AuthController {
   @ApiBadRequestResponse({ description: 'Old password is incorrect.' })
   @ApiUnauthorizedResponse({ description: 'Invalid token' })
   async changeMyPassword(
-    @Request() req: DTO.Request.AuthorizedRequest,
+    @Req() req: DTO.Request.AuthorizedRequest,
     @Body() body: ChangeMyPasswordDto,
   ) {
     const accountId = req.context.id;
@@ -320,9 +337,7 @@ export class AuthController {
     type: AccountFullResponse,
   })
   @ApiUnauthorizedResponse({ description: 'Invalid token' })
-  async fetchAllowedApplications(
-    @Request() req: DTO.Request.AuthorizedRequest,
-  ) {
+  async fetchAllowedApplications(@Req() req: DTO.Request.AuthorizedRequest) {
     const accountId = req.context.id;
     const account = await this.accountService.checkIsFound({
       where: { id: accountId },

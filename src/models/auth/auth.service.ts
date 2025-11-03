@@ -13,13 +13,20 @@ import { LoginResponse } from './auth.dto';
 import { AccountFullResponse } from '../account/account.dto';
 import { Op } from 'sequelize';
 import { MicrosoftAuthService } from '../microsoft-auth/microsoft-auth.service';
-import { Utils as BackendUtils } from 'sea-backend-helpers';
+import {
+  Utils as BackendUtils,
+  Services,
+  Constants as BConstants,
+} from 'sea-backend-helpers';
 import * as fs from 'fs';
 import * as path from 'path';
 import { RoleService } from '../role/role.service';
 import { Cache, CACHE_MANAGER } from '@nestjs/cache-manager';
 import * as ms from 'ms';
 import { Role } from '../role/role.model';
+import { CONSTANTS, Utils } from 'sea-platform-helpers';
+import { IPService } from '../ip/ip.service';
+
 @Injectable()
 export class AuthService {
   constructor(
@@ -31,7 +38,25 @@ export class AuthService {
     private readonly roleService: RoleService,
     @Inject(CACHE_MANAGER)
     private readonly cache: Cache,
+    private readonly queueService: Services.QueueService,
+    private readonly IPService: IPService,
   ) {}
+
+  private async notifyLogin(
+    accountId: string,
+    userAgent: string = CONSTANTS.Server.DEFAULT_USER_AGENT,
+    ip_address: string = '127.0.0.1',
+  ) {
+    const info = await this.IPService.getIPInfo(ip_address);
+
+    this.queueService.addJob(BConstants.Queue.Messages.Email, 'Login', {
+      accountId,
+      device: userAgent,
+      ip_address,
+      location: `${info.country}, ${info.city}, ${info.region}`,
+      time: Utils.Moment.default().toLocaleString(),
+    });
+  }
 
   private whitelistToken = async (
     accountId: string,
@@ -88,7 +113,12 @@ export class AuthService {
     return token;
   }
 
-  async login(data: LoginDto, deviceId: string) {
+  async login(
+    data: LoginDto,
+    deviceId: string,
+    userAgent: string,
+    ipAddress: string,
+  ) {
     const { email, phoneNumber, password } = data;
 
     let identifier: string;
@@ -120,10 +150,17 @@ export class AuthService {
 
     const token = await this.signToken(accountResponse, deviceId);
 
+    this.notifyLogin(account.id, userAgent, ipAddress);
+
     return this.makeLoginResponse(token, accountResponse);
   }
 
-  async microsoftLogin(data: MicrosoftLoginDto, deviceId: string) {
+  async microsoftLogin(
+    data: MicrosoftLoginDto,
+    deviceId: string,
+    userAgent: string,
+    ipAddress: string,
+  ) {
     const { idToken } = data;
 
     const { email, name } =
@@ -157,6 +194,8 @@ export class AuthService {
       await this.accountService.makeAccountFullResponse(account);
 
     const token = await this.signToken(accountResponse, deviceId);
+
+    this.notifyLogin(account.id, userAgent, ipAddress);
 
     return this.makeLoginResponse(token, accountResponse);
   }
