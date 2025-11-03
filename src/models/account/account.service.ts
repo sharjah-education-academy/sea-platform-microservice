@@ -25,6 +25,7 @@ import { CONSTANTS, Utils } from 'sea-platform-helpers';
 import { RolePermission } from '../role-permission/role-permission.model';
 
 import { Cache, CACHE_MANAGER } from '@nestjs/cache-manager';
+import { AccountAlertSettingService } from '../account-alert-setting/account-alert-setting.service';
 
 @Injectable()
 export class AccountService {
@@ -35,6 +36,7 @@ export class AccountService {
     private readonly organizationService: OrganizationService,
     private readonly departmentService: DepartmentService,
     private readonly applicationService: ApplicationService,
+    private readonly accountAlertSettingService: AccountAlertSettingService,
     @Inject(CACHE_MANAGER)
     private readonly cache: Cache,
   ) {}
@@ -403,6 +405,11 @@ export class AccountService {
 
     const applicationKeys = applications.map((a) => a.key);
 
+    const alertSettings =
+      await this.accountAlertSettingService.makeAccountAlertsSettingsResponse(
+        account,
+      );
+
     return new AccountFullResponse(
       account,
       accountResponse.roles,
@@ -410,6 +417,7 @@ export class AccountService {
       departmentResponse,
       permissionKeys,
       applicationKeys,
+      alertSettings,
     );
   }
 

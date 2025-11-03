@@ -5,6 +5,7 @@ import { RoleShortResponse } from '../role/role.dto';
 import { CONSTANTS } from 'sea-platform-helpers';
 import { OrganizationResponse } from '../organization/organization.dto';
 import { DepartmentResponse } from '../department/department.dto';
+import { AccountAlertGroupSettingGroup } from '../account-alert-setting/account-alert-setting.dto';
 
 export class AccountShortResponse {
   @ApiProperty({ type: String })
@@ -57,6 +58,9 @@ export class AccountFullResponse extends AccountShortResponse {
   @ApiProperty({ enum: CONSTANTS.Application.ApplicationKeys, isArray: true })
   applicationKeys: CONSTANTS.Application.ApplicationKeys[];
 
+  @ApiProperty({ type: AccountAlertGroupSettingGroup, isArray: true })
+  alertSettings: AccountAlertGroupSettingGroup[];
+
   constructor(
     account: Account,
     roles: RoleShortResponse[],
@@ -64,10 +68,12 @@ export class AccountFullResponse extends AccountShortResponse {
     department: DepartmentResponse | undefined,
     permissionKeys: CONSTANTS.Permission.PermissionKeys[],
     applicationKeys: CONSTANTS.Application.ApplicationKeys[],
+    alertSettings: AccountAlertGroupSettingGroup[],
   ) {
     super(account, roles, organization, department);
 
     this.permissionKeys = permissionKeys;
     this.applicationKeys = applicationKeys;
+    this.alertSettings = alertSettings;
   }
 }

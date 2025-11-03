@@ -5,7 +5,7 @@ import {
   Headers,
   Post,
   Put,
-  Request,
+  Req,
   Res,
   UseGuards,
 } from '@nestjs/common';
@@ -25,6 +25,7 @@ import {
   ResetPasswordDto,
   UpdateMyAccountDto,
   MicrosoftLoginDto,
+  UpdateAlertSettingsDto,
 } from './auth.dto';
 import { AuthService } from 'src/models/auth/auth.service';
 import { LoginResponse } from 'src/models/auth/auth.dto';
@@ -40,6 +41,7 @@ import { Response } from 'express';
 import { ServerConfigService } from 'src/models/server-config/server-config.service';
 import { JWTConfig } from 'src/config';
 import * as ms from 'ms';
+import { AccountAlertSettingService } from 'src/models/account-alert-setting/account-alert-setting.service';
 
 @Controller('auth')
 @ApiTags('Internal', 'Auth')
@@ -50,6 +52,7 @@ export class AuthController {
     private readonly OTPService: OTPService,
     private readonly applicationService: ApplicationService,
     private readonly serverConfigService: ServerConfigService,
+    private readonly accountAlertSettingService: AccountAlertSettingService,
   ) {}
 
   @Post('login')
@@ -351,5 +354,30 @@ export class AuthController {
       await this.applicationService.makeApplicationsResponse(applications);
 
     return applicationResponses;
+  }
+
+  @Put('update-alert-settings')
+  @UseGuards(JWTAuthGuard)
+  @ApiOperation({ summary: 'Update alert settings' })
+  @ApiOkResponse({
+    description: 'The account alert settings get updated successfully.',
+    type: AccountFullResponse,
+  })
+  @ApiUnauthorizedResponse({ description: 'Invalid credentials' })
+  async updateAlertSettings(
+    @Req() req: DTO.Request.AuthorizedRequest,
+    @Body() body: UpdateAlertSettingsDto,
+  ) {
+    const accountId = req.context.id;
+    const account = await this.accountService.checkIsFound({
+      where: { id: accountId },
+    });
+
+    await this.accountAlertSettingService.updateAlertSettings(
+      account,
+      body.settings,
+    );
+
+    return this.accountService.makeAccountFullResponse(account);
   }
 }

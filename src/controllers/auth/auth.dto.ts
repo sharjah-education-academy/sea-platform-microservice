@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Transform } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
   IsString,
   IsOptional,
@@ -9,8 +9,14 @@ import {
   IsEmail,
   MaxLength,
   IsDateString,
+  IsEnum,
+  IsBoolean,
+  IsArray,
+  ValidateNested,
+  IsIn,
+  ValidateIf,
 } from 'class-validator';
-import { Utils } from 'sea-platform-helpers';
+import { CONSTANTS, Utils } from 'sea-platform-helpers';
 import { Decorators } from 'sea-backend-helpers';
 
 export class LoginDto {
@@ -199,6 +205,7 @@ export class UpdateMyAccountDto {
   })
   @IsOptional()
   @IsDateString()
+  @Transform(({ value }) => (value === '' ? undefined : value))
   birthDate?: Date;
 }
 
@@ -209,4 +216,23 @@ export class MicrosoftLoginDto {
   })
   @IsString()
   idToken: string;
+}
+
+export class UpdateAlertSettingDTO {
+  @ApiProperty({ enum: CONSTANTS.AccountAlertSetting.AlertActions })
+  @IsEnum(CONSTANTS.AccountAlertSetting.AlertActions)
+  action: CONSTANTS.AccountAlertSetting.AlertActions;
+  @ApiProperty({ type: Boolean })
+  @IsBoolean()
+  emailEnabled: boolean;
+  @ApiProperty({ type: Boolean })
+  @IsBoolean()
+  notificationEnabled: boolean;
+}
+export class UpdateAlertSettingsDto {
+  @ApiProperty({ type: UpdateAlertSettingDTO, isArray: true })
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => UpdateAlertSettingDTO)
+  settings: UpdateAlertSettingDTO[];
 }

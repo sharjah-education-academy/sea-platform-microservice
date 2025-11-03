@@ -12,7 +12,7 @@ import {
   ForeignKey,
   BelongsTo,
 } from 'sequelize-typescript';
-import { Utils } from 'sea-platform-helpers';
+import { CONSTANTS, Utils } from 'sea-platform-helpers';
 
 import { OTP } from '../otp/otp.model';
 import { Role } from '../role/role.model';
@@ -20,6 +20,7 @@ import { AccountRoles } from '../account-role/account-role.model';
 import { Utils as BackendUtils } from 'sea-backend-helpers';
 import { Department } from '../department/department.model';
 import { Organization } from '../organization/organization.model';
+import { AccountAlertSetting } from '../account-alert-setting/account-alert-setting.model';
 
 @Table({
   tableName: 'accounts',
@@ -91,6 +92,9 @@ export class Account extends Model {
 
   @HasMany(() => OTP)
   OTPs: OTP[];
+
+  @HasMany(() => AccountAlertSetting)
+  accountAlertSettings: AccountAlertSetting[];
 
   @BelongsToMany(() => Role, () => AccountRoles)
   roles: Role[];
