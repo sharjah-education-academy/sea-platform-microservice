@@ -42,6 +42,14 @@ export class CreateEmailTemplateDto {
   description?: string;
 
   @ApiProperty({
+    description: 'The code of the email template',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  code?: string;
+
+  @ApiProperty({
     description: 'The array of the parameters of the email template',
     required: true,
     type: String,
@@ -82,6 +90,14 @@ export class UpdateEmailTemplateDto {
   @MinLength(3)
   @MaxLength(1000)
   description?: string;
+
+  @ApiProperty({
+    description: 'The code of the email template',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  code?: string;
 
   @ApiProperty({
     description: 'The array of the parameters of the email template',

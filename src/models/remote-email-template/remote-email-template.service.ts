@@ -18,8 +18,19 @@ export class RemoteEmailTemplateService {
     )
     private readonly remote: Modules.Remote.RemoteService,
   ) {}
+
   async findAll(page = 1, limit = 10, query = '') {
-    return this.remote.fetchAll(`?page=${page}&limit=${limit}&q=${query}`);
+    return this.remote.fetchAllWithPagination<DTO.EmailTemplate.IEmailTemplate>(
+      page,
+      limit,
+      query,
+    );
+  }
+
+  async findByCode(code: string) {
+    const response = await this.findAll(1, 1, code);
+    if (!response) return null;
+    return response.data[0];
   }
 
   async checkFindById<T>(id: string): Promise<T | null> {
@@ -41,30 +52,36 @@ export class RemoteEmailTemplateService {
   }
 
   async update(id: string, body: UpdateEmailTemplateDto) {
-    try {
-      const response = await firstValueFrom(
-        this.remote
-          .getHttpService()
-          .put<DTO.EmailTemplate.IEmailTemplate>(this.remote.getUrl(id), body),
-      );
+    return await this.remote.update<
+      DTO.EmailTemplate.IEmailTemplate,
+      UpdateEmailTemplateDto
+    >(id, body);
+    // try {
+    //   const response = await firstValueFrom(
+    //     this.remote
+    //       .getHttpService()
+    //       .put<DTO.EmailTemplate.IEmailTemplate>(this.remote.getUrl(id), body),
+    //   );
 
-      return response.data;
-    } catch {
-      return null;
-    }
+    //   return response.data;
+    // } catch {
+    //   return null;
+    // }
   }
 
   async remove(id: string) {
-    try {
-      const response = await firstValueFrom(
-        this.remote
-          .getHttpService()
-          .delete<DTO.EmailTemplate.IEmailTemplate>(this.remote.getUrl(id)),
-      );
+    return await this.remote.deleteById(id);
 
-      return response.data;
-    } catch {
-      return null;
-    }
+    // try {
+    //   const response = await firstValueFrom(
+    //     this.remote
+    //       .getHttpService()
+    //       .delete<DTO.EmailTemplate.IEmailTemplate>(this.remote.getUrl(id)),
+    //   );
+
+    //   return response.data;
+    // } catch {
+    //   return null;
+    // }
   }
 }

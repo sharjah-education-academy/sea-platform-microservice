@@ -5,7 +5,7 @@ import {
   Headers,
   Post,
   Put,
-  Request,
+  Req,
   Res,
   UseGuards,
 } from '@nestjs/common';
@@ -25,6 +25,7 @@ import {
   ResetPasswordDto,
   UpdateMyAccountDto,
   MicrosoftLoginDto,
+  UpdateAlertSettingsDto,
 } from './auth.dto';
 import { AuthService } from 'src/models/auth/auth.service';
 import { LoginResponse } from 'src/models/auth/auth.dto';
@@ -40,6 +41,7 @@ import { Response } from 'express';
 import { ServerConfigService } from 'src/models/server-config/server-config.service';
 import { JWTConfig } from 'src/config';
 import * as ms from 'ms';
+import { AccountAlertSettingService } from 'src/models/account-alert-setting/account-alert-setting.service';
 
 @Controller('auth')
 @ApiTags('Internal', 'Auth')
@@ -50,6 +52,7 @@ export class AuthController {
     private readonly OTPService: OTPService,
     private readonly applicationService: ApplicationService,
     private readonly serverConfigService: ServerConfigService,
+    private readonly accountAlertSettingService: AccountAlertSettingService,
   ) {}
 
   @Post('login')
@@ -67,14 +70,24 @@ export class AuthController {
   async login(
     @Body() body: LoginDto,
     @Res({ passthrough: true }) res: Response,
+    @Req() req: Request,
     @Headers(CONSTANTS.Server.DEVICE_ID_HEADER_KEY)
     deviceId: string = CONSTANTS.Server.DEFAULT_DEVICE_ID,
+    @Headers(CONSTANTS.Server.USER_AGENT_HEADER_KEY)
+    userAgent: string = CONSTANTS.Server.DEFAULT_USER_AGENT,
   ) {
+    const { clientIp } = req as any;
+
     const sharedCookieDomain =
       this.serverConfigService.get<string>('SHARED_COOKIE_DOMAIN') ||
       '.platform.sea.ac.ae';
 
-    const LoginResponse = await this.authService.login(body, deviceId);
+    const LoginResponse = await this.authService.login(
+      body,
+      deviceId,
+      userAgent,
+      clientIp,
+    );
 
     const expiresIn = JWTConfig.JWT_OPTIONS.expiresIn;
     let ttlSeconds: number;
@@ -110,14 +123,23 @@ export class AuthController {
   @ApiUnauthorizedResponse({ description: 'The Id Token is invalid' })
   async microsoftLoginAccount(
     @Body() body: MicrosoftLoginDto,
+    @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
     @Headers(CONSTANTS.Server.DEVICE_ID_HEADER_KEY)
     deviceId: string = CONSTANTS.Server.DEFAULT_DEVICE_ID,
+    @Headers(CONSTANTS.Server.USER_AGENT_HEADER_KEY)
+    userAgent: string = CONSTANTS.Server.DEFAULT_USER_AGENT,
   ) {
+    const { clientIp } = req as any;
     const sharedCookieDomain =
       this.serverConfigService.get<string>('SHARED_COOKIE_DOMAIN') ||
       '.platform.sea.ac.ae';
-    const LoginResponse = await this.authService.microsoftLogin(body, deviceId);
+    const LoginResponse = await this.authService.microsoftLogin(
+      body,
+      deviceId,
+      userAgent,
+      clientIp,
+    );
 
     const expiresIn = JWTConfig.JWT_OPTIONS.expiresIn;
     let ttlSeconds: number;
@@ -148,7 +170,7 @@ export class AuthController {
   })
   logout(
     @Res({ passthrough: true }) res: Response,
-    @Request() req: DTO.Request.AuthorizedRequest,
+    @Req() req: DTO.Request.AuthorizedRequest,
     @Headers(CONSTANTS.Server.DEVICE_ID_HEADER_KEY)
     deviceId: string = CONSTANTS.Server.DEFAULT_DEVICE_ID,
   ) {
@@ -179,9 +201,7 @@ export class AuthController {
     type: AccountFullResponse,
   })
   @ApiUnauthorizedResponse({ description: 'Invalid token' })
-  async fetchLoggedAccountDetails(
-    @Request() req: DTO.Request.AuthorizedRequest,
-  ) {
+  async fetchLoggedAccountDetails(@Req() req: DTO.Request.AuthorizedRequest) {
     const accountId = req.context.id;
     const account = await this.accountService.checkIsFound({
       where: { id: accountId },
@@ -198,7 +218,7 @@ export class AuthController {
   })
   @ApiUnauthorizedResponse({ description: 'Invalid token' })
   async updateLoggedAccountDetails(
-    @Request() req: DTO.Request.AuthorizedRequest,
+    @Req() req: DTO.Request.AuthorizedRequest,
     @Body() body: UpdateMyAccountDto,
   ) {
     const accountId = req.context.id;
@@ -220,7 +240,7 @@ export class AuthController {
   @ApiBadRequestResponse({ description: 'Old password is incorrect.' })
   @ApiUnauthorizedResponse({ description: 'Invalid token' })
   async changeMyPassword(
-    @Request() req: DTO.Request.AuthorizedRequest,
+    @Req() req: DTO.Request.AuthorizedRequest,
     @Body() body: ChangeMyPasswordDto,
   ) {
     const accountId = req.context.id;
@@ -320,9 +340,7 @@ export class AuthController {
     type: AccountFullResponse,
   })
   @ApiUnauthorizedResponse({ description: 'Invalid token' })
-  async fetchAllowedApplications(
-    @Request() req: DTO.Request.AuthorizedRequest,
-  ) {
+  async fetchAllowedApplications(@Req() req: DTO.Request.AuthorizedRequest) {
     const accountId = req.context.id;
     const account = await this.accountService.checkIsFound({
       where: { id: accountId },
@@ -336,5 +354,30 @@ export class AuthController {
       await this.applicationService.makeApplicationsResponse(applications);
 
     return applicationResponses;
+  }
+
+  @Put('update-alert-settings')
+  @UseGuards(JWTAuthGuard)
+  @ApiOperation({ summary: 'Update alert settings' })
+  @ApiOkResponse({
+    description: 'The account alert settings get updated successfully.',
+    type: AccountFullResponse,
+  })
+  @ApiUnauthorizedResponse({ description: 'Invalid credentials' })
+  async updateAlertSettings(
+    @Req() req: DTO.Request.AuthorizedRequest,
+    @Body() body: UpdateAlertSettingsDto,
+  ) {
+    const accountId = req.context.id;
+    const account = await this.accountService.checkIsFound({
+      where: { id: accountId },
+    });
+
+    await this.accountAlertSettingService.updateAlertSettings(
+      account,
+      body.settings,
+    );
+
+    return this.accountService.makeAccountFullResponse(account);
   }
 }

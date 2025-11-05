@@ -20,11 +20,9 @@ export class RemoteEmailTemplateVersionService {
   ) {}
 
   async findAllForTemplate(templateId: string) {
-    return this.remote.fetchAll(`/${templateId}/versions`);
-  }
-
-  async findAll(page = 1, limit = 10, query = '') {
-    return this.remote.fetchAll(`?page=${page}&limit=${limit}&q=${query}`);
+    return this.remote.fetchAll<DTO.EmailTemplate.IEmailTemplateVersion>(
+      `/${templateId}/versions`,
+    );
   }
 
   async checkFindById<T>(id: string): Promise<T | null> {
@@ -49,33 +47,10 @@ export class RemoteEmailTemplateVersionService {
   }
 
   async update(id: string, body: UpdateEmailTemplateVersionDto) {
-    try {
-      const response = await firstValueFrom(
-        this.remote
-          .getHttpService()
-          .put<DTO.EmailTemplate.IEmailTemplateVersion>(
-            this.remote.getUrl(id),
-            body,
-          ),
-      );
-
-      return response.data;
-    } catch {
-      return null;
-    }
+    return await this.remote.update(id, body);
   }
 
   async remove(id: string) {
-    try {
-      const response = await firstValueFrom(
-        this.remote
-          .getHttpService()
-          .delete<DTO.EmailTemplate.IEmailTemplate>(this.remote.getUrl(id)),
-      );
-
-      return response.data;
-    } catch {
-      return null;
-    }
+    return await this.remote.deleteById(id);
   }
 }

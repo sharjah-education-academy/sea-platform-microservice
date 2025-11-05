@@ -9,6 +9,7 @@ import { RolePermission } from 'src/models/role-permission/role-permission.model
 import { Application } from 'src/models/application/application.model';
 import { Organization } from 'src/models/organization/organization.model';
 import { Department } from 'src/models/department/department.model';
+import { AccountAlertSetting } from 'src/models/account-alert-setting/account-alert-setting.model';
 
 export const databaseProviders = [
   {
@@ -41,6 +42,7 @@ export const databaseProviders = [
         Application,
         Organization,
         Department,
+        AccountAlertSetting,
       ]);
       await sequelize.sync();
       return sequelize;

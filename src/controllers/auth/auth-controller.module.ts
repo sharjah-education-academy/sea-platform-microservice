@@ -7,6 +7,7 @@ import { JwtService } from '@nestjs/jwt';
 import { AccountModule } from 'src/modules/account.module';
 import { ApplicationModule } from 'src/modules/application.module';
 import { ServerConfigModule } from 'src/modules/server-config.module';
+import { AccountAlertSettingModule } from 'src/modules/account-alert-setting.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { ServerConfigModule } from 'src/modules/server-config.module';
     OTPModule,
     ApplicationModule,
     ServerConfigModule,
+    AccountAlertSettingModule,
   ],
   controllers: [AuthController],
   providers: [JwtService],

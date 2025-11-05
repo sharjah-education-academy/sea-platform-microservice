@@ -23,6 +23,7 @@ import { RemoteEmailTemplateService } from 'src/models/remote-email-template/rem
           cache: {
             get: (key) => cache.get(key),
             set: (key, value, ttl) => cache.set(key, value, ttl),
+            del: (key: string) => cache.del(key),
           },
         }),
       },

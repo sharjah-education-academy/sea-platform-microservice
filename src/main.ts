@@ -5,6 +5,7 @@ import { ValidationPipe } from '@nestjs/common';
 import * as cookieParser from 'cookie-parser';
 import { ServerConfigService } from './models/server-config/server-config.service';
 import { CONSTANTS } from 'sea-platform-helpers';
+import { IpMiddleware } from './middlewares/ip.middleware';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -54,6 +55,8 @@ async function bootstrap() {
       forbidNonWhitelisted: true, // Throw an error if non-whitelisted properties are found
     }),
   );
+
+  app.use(new IpMiddleware().use);
 
   await app.listen(process.env.PORT ?? 3000);
 }

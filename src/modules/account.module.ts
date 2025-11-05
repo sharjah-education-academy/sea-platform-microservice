@@ -6,6 +6,7 @@ import { RoleModule } from './role.module';
 import { OrganizationModule } from './organization.module';
 import { DepartmentModule } from './department.module';
 import { ApplicationModule } from './application.module';
+import { AccountAlertSettingModule } from './account-alert-setting.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { ApplicationModule } from './application.module';
     OrganizationModule,
     DepartmentModule,
     ApplicationModule,
+    AccountAlertSettingModule,
   ],
   providers: [AccountService, ...accountProviders],
   exports: [AccountService],
