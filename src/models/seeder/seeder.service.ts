@@ -194,11 +194,17 @@ export class SeederService {
     return true;
   }
 
-  async seedInitData() {
+  async seedInitData(
+    {
+      seedEmailTemplates,
+    }: {
+      seedEmailTemplates: boolean;
+    } = { seedEmailTemplates: false },
+  ) {
     await this.seedApplications();
     await this.seedInitRoles();
     await this.seedSuperAdminAccount();
-    await this.seedEmailTemplates();
+    if (seedEmailTemplates) await this.seedEmailTemplates();
     return true;
   }
 
