@@ -162,7 +162,7 @@ export class AuthController {
   }
 
   @Post('logout')
-  // @UseGuards(JWTAuthGuard) // Allow logout even there is no token or token is invalid
+  @UseGuards(JWTAuthGuard)
   @ApiHeader({
     name: CONSTANTS.Server.DEVICE_ID_HEADER_KEY,
     description: 'Unique device identifier',
@@ -175,22 +175,20 @@ export class AuthController {
     deviceId: string = CONSTANTS.Server.DEFAULT_DEVICE_ID,
   ) {
     const { id: accountId } = req.context;
-    if (accountId) {
-      const sharedCookieDomain =
-        this.serverConfigService.get<string>('SHARED_COOKIE_DOMAIN') ||
-        '.platform.sea.ac.ae';
+    const sharedCookieDomain =
+      this.serverConfigService.get<string>('SHARED_COOKIE_DOMAIN') ||
+      '.platform.sea.ac.ae';
 
-      this.authService.logout(accountId, deviceId);
+    this.authService.logout(accountId, deviceId);
 
-      res.cookie(CONSTANTS.JWT.JWTCookieKey, '', {
-        httpOnly: false,
-        secure: true,
-        sameSite: 'none',
-        domain: sharedCookieDomain,
-        path: '/',
-        maxAge: 0, // Expire immediately
-      });
-    }
+    res.cookie(CONSTANTS.JWT.JWTCookieKey, '', {
+      httpOnly: false,
+      secure: true,
+      sameSite: 'none',
+      domain: sharedCookieDomain,
+      path: '/',
+      maxAge: 0, // Expire immediately
+    });
 
     return true;
   }
