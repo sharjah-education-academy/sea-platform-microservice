@@ -8,7 +8,7 @@ import { CONSTANTS } from 'sea-platform-helpers';
 import { IncludeQuery } from 'sea-backend-helpers/dist/services/sequelize-crud.service';
 import * as fs from 'fs';
 import * as path from 'path';
-import { Application } from '../application/application.model';
+import { ApplicationService } from '../application/application.service';
 
 @Injectable()
 export class LocalizationService extends Services.SequelizeCRUDService<
@@ -19,8 +19,8 @@ export class LocalizationService extends Services.SequelizeCRUDService<
   constructor(
     @Inject(Constants.Database.DatabaseRepositories.LocalizationRepository)
     private localizationRepository: typeof Localization,
-    @Inject(Constants.Database.DatabaseRepositories.ApplicationRepository)
-    private applicationRepository: typeof Application,
+
+    private readonly applicationService: ApplicationService,
   ) {
     super(localizationRepository, 'Localization');
   }
@@ -42,9 +42,9 @@ export class LocalizationService extends Services.SequelizeCRUDService<
     }>;
   }) {
     // Fetch the application to get its name
-    const application = await this.applicationRepository.findByPk(
-      options.applicationId,
-    );
+    const application = await this.applicationService.findOne({
+      where: { id: options.applicationId },
+    });
 
     if (!application) {
       throw new Error(`Application with ID ${options.applicationId} not found`);
@@ -55,7 +55,7 @@ export class LocalizationService extends Services.SequelizeCRUDService<
       process.cwd(),
       'public',
       'localization',
-      application.name,
+      application.key,
     );
 
     // Create the directory if it doesn't exist
