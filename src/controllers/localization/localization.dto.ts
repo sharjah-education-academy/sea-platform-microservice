@@ -1,5 +1,16 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsArray, IsBoolean, IsString } from 'class-validator';
+import { CONSTANTS } from 'sea-platform-helpers';
+import { FindAllDto } from 'src/common/global.dto';
+
+export class FindAllLocalizationsDto extends FindAllDto<CONSTANTS.Localization.LocalizationIncludes> {
+  @ApiProperty({
+    description: 'application key',
+    required: true,
+  })
+  @IsString()
+  applicationKey: CONSTANTS.Application.ApplicationKeys;
+}
 
 export class CreateLocalizationDto {
   @ApiProperty({
@@ -22,6 +33,13 @@ export class CreateLocalizationDto {
   })
   @IsBoolean()
   enabled: boolean;
+
+  @ApiProperty({
+    description: 'application key',
+    required: true,
+  })
+  @IsString()
+  applicationKey: CONSTANTS.Application.ApplicationKeys;
 }
 
 export class GenerateJsonLocalizationsDto {

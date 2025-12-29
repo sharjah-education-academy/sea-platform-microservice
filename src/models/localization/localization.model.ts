@@ -8,10 +8,18 @@ import {
   ForeignKey,
 } from 'sequelize-typescript';
 import { Application } from '../application/application.model';
+import { CONSTANTS } from 'sea-platform-helpers';
 
 @Table({
   tableName: 'localizations',
   timestamps: true, // Automatically adds createdAt and updatedAt timestamps
+  indexes: [
+    {
+      unique: true,
+      fields: ['code', 'applicationKey'],
+      name: 'uniq_localizations_code_applicationKey',
+    },
+  ],
 })
 export class Localization extends Model {
   @PrimaryKey
@@ -20,7 +28,10 @@ export class Localization extends Model {
   id: string;
 
   @ForeignKey(() => Application)
-  @Column({})
+  @Column({
+    type: DataType.UUID,
+    allowNull: false,
+  })
   applicationId: string;
 
   @Column({
@@ -35,27 +46,11 @@ export class Localization extends Model {
   })
   enabled: boolean;
 
-  // @Column({
-  //   type: DataType.STRING,
-  //   allowNull: false,
-  // })
-  // native_name: string;
-
-  // @Column({
-  //   type: DataType.STRING,
-  //   allowNull: false,
-  // })
-  // locale: string; // en
-
-  // @Column({
-  //   type: DataType.BOOLEAN,
-  //   allowNull: false,
-  // })
-  // default: boolean;
-
-  // @Column({
-  //   type: DataType.BOOLEAN,
-  //   allowNull: false,
-  // })
-  // isRtl: boolean;
+  @Column({
+    type: DataType.ENUM(
+      ...Object.values(CONSTANTS.Application.ApplicationKeys),
+    ),
+    allowNull: false,
+  })
+  applicationKey: CONSTANTS.Application.ApplicationKeys;
 }

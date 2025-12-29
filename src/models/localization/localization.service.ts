@@ -3,7 +3,10 @@ import { Constants } from 'src/config';
 
 import { Services } from 'sea-backend-helpers';
 import { Localization } from './localization.model';
-import { LocalizationResponse } from './localization.dto';
+import {
+  LocalizationArrayDataResponse,
+  LocalizationResponse,
+} from './localization.dto';
 import { CONSTANTS } from 'sea-platform-helpers';
 import { IncludeQuery } from 'sea-backend-helpers/dist/services/sequelize-crud.service';
 import * as fs from 'fs';
@@ -74,12 +77,7 @@ export class LocalizationService extends Services.SequelizeCRUDService<
       }, {});
 
       // Create the JSON structure
-      const jsonContent = {
-        applicationKey: application.key,
-        localization: {
-          [code]: translationObject,
-        },
-      };
+      const jsonContent = translationObject;
 
       // Define the file path
       const filePath = path.join(baseDir, `${code}.json`);
@@ -93,5 +91,122 @@ export class LocalizationService extends Services.SequelizeCRUDService<
       message: `Generated ${options.values.length} localization files for application ${application.name}`,
       path: baseDir,
     };
+  }
+
+  async fetchLocalizationsByApplicationKey(
+    applicationKey: CONSTANTS.Application.ApplicationKeys,
+  ) {
+    // Define the directory path for the application's localization files
+    const baseDir = path.join(
+      process.cwd(),
+      'public',
+      'localization',
+      applicationKey,
+    );
+
+    // Check if the directory exists
+    if (!fs.existsSync(baseDir)) {
+      throw new Error(
+        `No localization files found for application key: ${applicationKey}`,
+      );
+    }
+
+    // Read all files in the directory
+    const files = fs.readdirSync(baseDir);
+
+    // Filter and read JSON files
+    const localizations = {};
+
+    for (const file of files) {
+      if (file.endsWith('.json')) {
+        const filePath = path.join(baseDir, file);
+        const fileContent = fs.readFileSync(filePath, 'utf-8');
+        const jsonData = JSON.parse(fileContent);
+        const languageCode = file.replace('.json', ''); // Extract language code from filename
+        localizations[languageCode] = jsonData;
+      }
+    }
+
+    if ('en' in localizations) {
+      console.log('English localization found:', localizations['en']);
+    } else {
+      localizations['en'] = CONSTANTS.Application.Applications.find(
+        (app) => app.key == applicationKey,
+      )?.localization;
+    }
+
+    const result = {
+      applicationKey,
+      localizations,
+    };
+
+    return result;
+  }
+
+  async makeLocalizationsArrayDataResponse(
+    page: number,
+    limit: number,
+    q: string,
+    applicationKey: CONSTANTS.Application.ApplicationKeys,
+    include?: CONSTANTS.Global.IncludeQuery<CONSTANTS.Localization.LocalizationIncludes>,
+  ) {
+    const { rows, totalCount } = await this.findAll(
+      {
+        where: {
+          applicationKey,
+        },
+      },
+      0,
+      0,
+      true,
+    );
+
+    const localizationsResponse = await this.makeResponses(rows, include);
+
+    return new LocalizationArrayDataResponse(
+      totalCount,
+      localizationsResponse,
+      page,
+      limit,
+    );
+  }
+
+  async updateJsonFileName(
+    oldLocalizationCode: string,
+    newLocalizationCode: string,
+    applicationKey: CONSTANTS.Application.ApplicationKeys,
+  ) {
+    const baseDir = path.join(
+      process.cwd(),
+      'public',
+      'localization',
+      applicationKey,
+    );
+
+    const oldFilePath = path.join(baseDir, `${oldLocalizationCode}.json`);
+    const newFilePath = path.join(baseDir, `${newLocalizationCode}.json`);
+    if (fs.existsSync(oldFilePath)) {
+      fs.renameSync(oldFilePath, newFilePath);
+    }
+
+    return;
+  }
+
+  async deleteJsonFile(
+    localizationCode: string,
+    applicationKey: CONSTANTS.Application.ApplicationKeys,
+  ) {
+    const baseDir = path.join(
+      process.cwd(),
+      'public',
+      'localization',
+      applicationKey,
+    );
+    const filePath = path.join(baseDir, `${localizationCode}.json`);
+    if (fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
+    }
+
+    return;
   }
 }
