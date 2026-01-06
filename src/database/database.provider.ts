@@ -10,6 +10,7 @@ import { Application } from 'src/models/application/application.model';
 import { Organization } from 'src/models/organization/organization.model';
 import { Department } from 'src/models/department/department.model';
 import { AccountAlertSetting } from 'src/models/account-alert-setting/account-alert-setting.model';
+import { Localization } from 'src/models/localization/localization.model';
 
 export const databaseProviders = [
   {
@@ -43,6 +44,7 @@ export const databaseProviders = [
         Organization,
         Department,
         AccountAlertSetting,
+        Localization,
       ]);
       await sequelize.sync();
       return sequelize;

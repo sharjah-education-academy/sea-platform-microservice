@@ -10,5 +10,6 @@ export enum DatabaseRepositories {
   FileRepository = 'FileRepository',
   OrganizationRepository = 'OrganizationRepository',
   DepartmentRepository = 'DepartmentRepository',
+  LocalizationRepository = 'LocalizationRepository',
   AccountAlertSettingRepository = 'AccountAlertSettingRepository',
 }

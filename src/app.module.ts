@@ -24,12 +24,20 @@ import { ExternalOrganizationControllerModule } from './controllers/external/org
 import { EmailTemplateControllerModule } from './controllers/email-template/email-template-controller.module';
 import { RedisCacheModule } from './modules/redis-cache.module';
 import { QueueModule } from './queue/queue.module';
+import { LocalizationModule } from './modules/localization.module';
+import { LocalizationControllerModule } from './controllers/localization/localization.module';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
 
 @Module({
   imports: [
     DatabaseModule,
     ConfigModule.forRoot({
       isGlobal: true,
+    }),
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'public'),
+      serveRoot: '/public',
     }),
     RedisCacheModule,
     ServerConfigModule,
@@ -54,6 +62,8 @@ import { QueueModule } from './queue/queue.module';
     DepartmentModule,
     ExternalOrganizationControllerModule,
     EmailTemplateControllerModule,
+    LocalizationModule,
+    LocalizationControllerModule,
   ],
   controllers: [],
   providers: [],

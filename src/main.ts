@@ -42,9 +42,27 @@ async function bootstrap() {
       },
       'sea-platform-jwt', // name of the security scheme
     )
+    .addApiKey(
+      {
+        type: 'apiKey',
+        name: CONSTANTS.Server.DEVICE_ID_HEADER_KEY,
+        in: 'header',
+        description: 'Device ID',
+      },
+      'deviceId', // name of the security scheme
+    )
+    .addSecurityRequirements('sea-platform-jwt')
+    .addSecurityRequirements('deviceId')
     .build();
+
   const documentFactory = () => SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api/docs', app, documentFactory, {
+
+  const swaggerBaseUrl =
+    configService.get('NODE_ENV') === 'production'
+      ? '/platform/api/docs'
+      : '/api/docs';
+
+  SwaggerModule.setup(swaggerBaseUrl, app, documentFactory, {
     customSiteTitle: 'SEA Platform Microservice',
   });
 

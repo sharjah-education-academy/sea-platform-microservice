@@ -1,6 +1,14 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
-import { IsInt, IsOptional, Min } from 'class-validator';
+import {
+  IsArray,
+  IsInt,
+  IsOptional,
+  IsString,
+  Min,
+  ValidateIf,
+} from 'class-validator';
+import { CONSTANTS } from 'sea-platform-helpers';
 
 export class ArrayDataResponse<T> {
   @ApiProperty({ type: Number })
@@ -24,7 +32,7 @@ export class ArrayDataResponse<T> {
   }
 }
 
-export class FindAllDto {
+export class FindAllDto<TInclude extends string = string> {
   @ApiProperty({
     description: 'Page number for pagination (default is 1)',
     example: 1,
@@ -57,4 +65,33 @@ export class FindAllDto {
     typeof value === 'string' ? value.toLowerCase() : value,
   )
   q?: string = '';
+
+  @ApiProperty({
+    type: String,
+    description: `Comma-separated list of relations to include (e.g. "author,tags"), array params (e.g. include[]=author&include[]=tags) ,or "all"`,
+    required: false,
+  })
+  @IsOptional()
+  @Transform(({ value }) => {
+    if (value === CONSTANTS.Global.AllValue) {
+      return CONSTANTS.Global.AllValue;
+    }
+
+    if (typeof value === 'string') {
+      return value
+        .split(',')
+        .map((v) => v.trim())
+        .filter(Boolean);
+    }
+
+    if (Array.isArray(value)) {
+      return value.map((v) => v.trim()).filter(Boolean);
+    }
+
+    return [];
+  })
+  @ValidateIf((o) => o.include !== CONSTANTS.Global.AllValue)
+  @IsArray()
+  @IsString({ each: true })
+  include?: CONSTANTS.Global.IncludeQuery<TInclude> = [];
 }
