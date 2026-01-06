@@ -25,7 +25,7 @@ import { EmailTemplateControllerModule } from './controllers/email-template/emai
 import { RedisCacheModule } from './modules/redis-cache.module';
 import { QueueModule } from './queue/queue.module';
 import { LocalizationModule } from './modules/localization.module';
-import { LocalizationControllerModule } from './controllers/localization/localization.module';
+import { LocalizationControllerModule } from './controllers/localization/localization-controller.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 

@@ -12,6 +12,15 @@ export class FindAllLocalizationsDto extends FindAllDto<CONSTANTS.Localization.L
   applicationKey: CONSTANTS.Application.ApplicationKeys;
 }
 
+export class GetAllLocalizationsDto {
+  @ApiProperty({
+    description: 'application key',
+    required: true,
+  })
+  @IsString()
+  applicationKey: CONSTANTS.Application.ApplicationKeys;
+}
+
 export class CreateLocalizationDto {
   @ApiProperty({
     description: 'name of language like Arabic,English, Spanish etc',
