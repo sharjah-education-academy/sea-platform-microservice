@@ -130,7 +130,9 @@ export class LocalizationService extends Services.SequelizeCRUDService<
     }
 
     if ('en' in localizations) {
-      console.log('English localization found:', localizations['en']);
+      console.log(
+        'English localization founded. No Need to fetch from constants.',
+      );
     } else {
       localizations['en'] = CONSTANTS.Application.Applications.find(
         (app) => app.key == applicationKey,
