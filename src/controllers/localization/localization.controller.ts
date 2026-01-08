@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -16,6 +17,7 @@ import {
   CreateLocalizationDto,
   FindAllLocalizationsDto,
   GenerateJsonLocalizationsDto,
+  GetAllLocalizationsDto,
 } from './localization.dto';
 import { Localization } from 'src/models/localization/localization.model';
 import { CONSTANTS } from 'sea-platform-helpers';
@@ -28,18 +30,18 @@ export class LocalizationController {
 
   @Post()
   async create(@Body() body: CreateLocalizationDto) {
-    // const exist = await this.localizationService.checkIsFound({
-    //   where: {
-    //     applicationKey: body.applicationKey,
-    //     code: body.code,
-    //   },
-    // });
+    const exist = await this.localizationService.checkIsFound({
+      where: {
+        applicationKey: body.applicationKey,
+        code: body.code,
+      },
+    });
 
-    // if (exist) {
-    //   throw new Error(
-    //     `Localization with applicationKey "${body.applicationKey}" and language code "${body.code}" already exists.`,
-    //   );
-    // }
+    if (exist) {
+      throw new BadRequestException(
+        `Localization with applicationKey "${body.applicationKey}" and language code "${body.code}" already exists.`,
+      );
+    }
     const localization = await this.localizationService.create(
       body as Partial<Localization>,
     );
@@ -58,6 +60,27 @@ export class LocalizationController {
       applicationKey,
       include,
     );
+  }
+
+  @Get('/all')
+  async getAll(@Query() query: GetAllLocalizationsDto) {
+    const { applicationKey } = query;
+
+    const localizations = await this.localizationService.findAll(
+      {
+        where: {
+          applicationKey,
+        },
+      },
+      0,
+      0,
+      true,
+    );
+    const response = await this.localizationService.makeResponses(
+      localizations.rows,
+    );
+
+    return response;
   }
 
   @Get('/:id')
@@ -107,30 +130,13 @@ export class LocalizationController {
     return response;
   }
 
-  // @Get('/languages/:applicationKey')
-  // async findAll(
-  //   @Param('applicationKey')
-  //   applicationKey: CONSTANTS.Application.ApplicationKeys,
-  // ) {
-  //   const { rows } = await this.localizationService.findAll(
-  //     {
-  //       where: {},
-  //     },
-  //     0,
-  //     0,
-  //     true,
-  //   );
-  //   return await this.localizationService.makeResponses(rows);
-  // }
-
   @Post('/generate-jsons')
   async generateDefaultLocalizations(
     @Body() body: GenerateJsonLocalizationsDto,
   ) {
-    console.log('Generating localizations with data:', body);
-    await this.localizationService.generateLocalizations(body);
+    const response = await this.localizationService.generateLocalizations(body);
 
-    return { message: 'Localizations generated successfully' };
+    return response.path;
   }
 
   @Get('/by-application-key/:applicationKey')

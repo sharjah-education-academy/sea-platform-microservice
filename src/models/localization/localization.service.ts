@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { Constants } from 'src/config';
 
 import { Services } from 'sea-backend-helpers';
@@ -50,7 +50,9 @@ export class LocalizationService extends Services.SequelizeCRUDService<
     });
 
     if (!application) {
-      throw new Error(`Application with ID ${options.applicationId} not found`);
+      throw new NotFoundException(
+        `Application with ID ${options.applicationId} not found`,
+      );
     }
 
     // Define the base directory for localization files
@@ -128,7 +130,9 @@ export class LocalizationService extends Services.SequelizeCRUDService<
     }
 
     if ('en' in localizations) {
-      console.log('English localization found:', localizations['en']);
+      console.log(
+        'English localization founded. No Need to fetch from constants.',
+      );
     } else {
       localizations['en'] = CONSTANTS.Application.Applications.find(
         (app) => app.key == applicationKey,
