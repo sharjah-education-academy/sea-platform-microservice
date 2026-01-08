@@ -30,7 +30,7 @@ export class LocalizationController {
 
   @Post()
   async create(@Body() body: CreateLocalizationDto) {
-    const exist = await this.localizationService.checkIsFound({
+    const exist = await this.localizationService.findOne({
       where: {
         applicationKey: body.applicationKey,
         code: body.code,

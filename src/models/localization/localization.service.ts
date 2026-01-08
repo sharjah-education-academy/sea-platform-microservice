@@ -108,9 +108,7 @@ export class LocalizationService extends Services.SequelizeCRUDService<
 
     // Check if the directory exists
     if (!fs.existsSync(baseDir)) {
-      throw new Error(
-        `No localization files found for application key: ${applicationKey}`,
-      );
+      await fs.mkdirSync(baseDir, { recursive: true });
     }
 
     // Read all files in the directory
