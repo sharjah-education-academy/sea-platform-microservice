@@ -49,7 +49,7 @@
     "reflect-metadata": "^0.2.0",
     "rxjs": "^7.8.1",
     "sea-backend-helpers": "^1.5.18",
-    "sea-platform-helpers": "^1.5.25",
+    "sea-platform-helpers": "^1.5.26",
     "sea-platform-microservice": "file:",
     "sequelize": "^6.37.5",
     "sequelize-typescript": "^2.1.6",
