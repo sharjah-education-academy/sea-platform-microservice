@@ -1,4 +1,4 @@
-import { Controller, Get, Param, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
 import {
   ApiNotFoundResponse,
   ApiOkResponse,
@@ -11,12 +11,37 @@ import { AccountService } from 'src/models/account/account.service';
 import { AccountFullResponse } from 'src/models/account/account.dto';
 import { CheckCallMe } from 'src/guards/check-call-me.guard';
 import { CONSTANTS } from 'sea-platform-helpers';
+import { FindAllAccountsByIdsDto } from './external-account.dto';
+import { Op } from 'sequelize';
 
 @Controller('external/accounts')
 @ApiTags('External', 'Account')
 @UseGuards(CheckCallMe)
 export class ExternalAccountController {
   constructor(private readonly accountService: AccountService) {}
+
+  @Post('/get-all-by-ids')
+  @ApiOperation({ summary: 'get accounts by ids' })
+  @ApiParam({
+    name: 'ids',
+    type: [String],
+    description: 'Array of IDs',
+  })
+  @ApiOkResponse({
+    description: 'Accounts fetched successfully',
+    type: AccountFullResponse,
+  })
+  @ApiNotFoundResponse({ description: 'Accounts not found' })
+  async fetchAccountsByIds(@Body() body: FindAllAccountsByIdsDto) {
+    const { ids } = body;
+
+    const accounts = await this.accountService.find({
+      where: {
+        id: { [Op.in]: ids },
+      },
+    });
+    return await this.accountService.makeAccountsFullResponse(accounts);
+  }
 
   @Get('/:id')
   @ApiOperation({ summary: 'get account details' })

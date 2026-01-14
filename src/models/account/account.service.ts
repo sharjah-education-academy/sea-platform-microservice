@@ -59,6 +59,10 @@ export class AccountService {
     return Utils.Array.removeDuplicates(permissionKeys, (a, b) => a === b);
   }
 
+  async find(options?: FindOptions<Attributes<Account>>) {
+    return await this.accountRepository.findAll(options);
+  }
+
   async findAll(
     options?: FindAndCountOptions<Attributes<Account>>,
     page: number = 1,
