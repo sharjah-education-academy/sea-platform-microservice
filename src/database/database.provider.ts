@@ -12,9 +12,14 @@ import { Department } from 'src/models/department/department.model';
 import { AccountAlertSetting } from 'src/models/account-alert-setting/account-alert-setting.model';
 import { Localization } from 'src/models/localization/localization.model';
 
+export enum DatabaseConnections {
+  Main = 'Main',
+  Creatrix = 'Creatrix',
+}
+
 export const databaseProviders = [
   {
-    provide: 'SEQUELIZE',
+    provide: DatabaseConnections.Main,
     useFactory: async (serverConfigService: ServerConfigService) => {
       const ConnectionConfig: SequelizeOptions = {
         host: serverConfigService.get<string>('DATABASE_HOST'),
@@ -47,6 +52,35 @@ export const databaseProviders = [
         Localization,
       ]);
       await sequelize.sync();
+      return sequelize;
+    },
+    inject: [ServerConfigService],
+  },
+  {
+    provide: DatabaseConnections.Creatrix,
+    useFactory: async (serverConfigService: ServerConfigService) => {
+      const ConnectionConfig: SequelizeOptions = {
+        host: serverConfigService.get<string>('CREATRIX_DATABASE_HOST'),
+        port: +serverConfigService.get<number>('CREATRIX_DATABASE_PORT'),
+        username: serverConfigService.get<string>('CREATRIX_DATABASE_USERNAME'),
+        password: serverConfigService.get<string>('CREATRIX_DATABASE_PASSWORD'),
+        database: serverConfigService.get<string>('CREATRIX_DATABASE_NAME'),
+        logging:
+          serverConfigService.get<string>('CREATRIX_DATABASE_LOGGING') ===
+          'true',
+      };
+
+      const sequelize = new Sequelize({
+        dialect: 'mysql',
+        sync: {
+          alter: false,
+        },
+        ...ConnectionConfig,
+      });
+      sequelize.addModels([]);
+
+      // No need for sync
+      // await sequelize.sync();
       return sequelize;
     },
     inject: [ServerConfigService],
