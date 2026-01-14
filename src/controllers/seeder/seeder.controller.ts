@@ -19,4 +19,14 @@ export class SeederController {
   async seedEmailTemplates() {
     return await this.seederService.seedEmailTemplates();
   }
+
+  @Post('/sync-students')
+  async syncStudents() {
+    return await this.seederService.syncStudents();
+  }
+
+  @Post('/sync-faculties')
+  async syncFaculties() {
+    return await this.seederService.syncFaculties();
+  }
 }

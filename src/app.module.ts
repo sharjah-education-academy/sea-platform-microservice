@@ -28,6 +28,11 @@ import { LocalizationModule } from './modules/localization.module';
 import { LocalizationControllerModule } from './controllers/localization/localization-controller.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
+import { StudentModule } from './modules/student.module';
+import { FacultyModule } from './modules/faculty.module';
+import { CreatrixStudentModule } from './modules/creatrix-student.module';
+import { CreatrixFacultyModule } from './modules/creatrix-faculty.module';
+import { CreatrixModule } from './modules/creatrix.module';
 
 @Module({
   imports: [
@@ -64,6 +69,11 @@ import { join } from 'path';
     EmailTemplateControllerModule,
     LocalizationModule,
     LocalizationControllerModule,
+    StudentModule,
+    FacultyModule,
+    CreatrixModule,
+    CreatrixStudentModule,
+    CreatrixFacultyModule,
   ],
   controllers: [],
   providers: [],

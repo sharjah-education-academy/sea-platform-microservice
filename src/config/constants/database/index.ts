@@ -12,4 +12,8 @@ export enum DatabaseRepositories {
   DepartmentRepository = 'DepartmentRepository',
   LocalizationRepository = 'LocalizationRepository',
   AccountAlertSettingRepository = 'AccountAlertSettingRepository',
+  CreatrixFacultyRepository = 'CreatrixFacultyRepository',
+  CreatrixStudentRepository = 'CreatrixStudentRepository',
+  FacultyRepository = 'FacultyRepository',
+  StudentRepository = 'StudentRepository',
 }

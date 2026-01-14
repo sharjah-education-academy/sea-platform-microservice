@@ -11,6 +11,10 @@ import { Organization } from 'src/models/organization/organization.model';
 import { Department } from 'src/models/department/department.model';
 import { AccountAlertSetting } from 'src/models/account-alert-setting/account-alert-setting.model';
 import { Localization } from 'src/models/localization/localization.model';
+import { CreatrixStudent } from 'src/models/creatrix/student/student.model';
+import { CreatrixFaculty } from 'src/models/creatrix/faculty/faculty.model';
+import { Student } from 'src/models/student/student.model';
+import { Faculty } from 'src/models/faculty/faculty.model';
 
 export enum DatabaseConnections {
   Main = 'Main',
@@ -50,6 +54,8 @@ export const databaseProviders = [
         Department,
         AccountAlertSetting,
         Localization,
+        Student,
+        Faculty,
       ]);
       await sequelize.sync();
       return sequelize;
@@ -77,7 +83,7 @@ export const databaseProviders = [
         },
         ...ConnectionConfig,
       });
-      sequelize.addModels([]);
+      sequelize.addModels([CreatrixStudent, CreatrixFaculty]);
 
       // No need for sync
       // await sequelize.sync();

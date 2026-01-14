@@ -8,6 +8,7 @@ import { RoleModule } from './role.module';
 import { PermissionService } from 'src/models/permission/permission.service';
 import { RemoteEmailTemplateModule } from './remote-email-template.module';
 import { RemoteEmailTemplateVersionModule } from './remote-email-template-version.module';
+import { CreatrixModule } from './creatrix.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { RemoteEmailTemplateVersionModule } from './remote-email-template-versio
     RoleModule,
     RemoteEmailTemplateModule,
     RemoteEmailTemplateVersionModule,
+    CreatrixModule,
   ],
   providers: [SeederService, PermissionService],
   exports: [SeederService],

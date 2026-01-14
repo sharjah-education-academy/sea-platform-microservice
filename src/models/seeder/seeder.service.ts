@@ -12,6 +12,7 @@ import { Op } from 'sequelize';
 import { DEFAULT_ROLE_NAMES } from 'src/config/constants/seeder';
 import { RemoteEmailTemplateService } from '../remote-email-template/remote-email-template.service';
 import { RemoteEmailTemplateVersionService } from '../remote-email-template/remote-email-template-version.service';
+import { CreatrixService } from '../creatrix/creatrix.service';
 
 @Injectable()
 export class SeederService {
@@ -23,6 +24,7 @@ export class SeederService {
     private readonly emailTemplateRemote: RemoteEmailTemplateService,
     private readonly emailTemplateVersionRemote: RemoteEmailTemplateVersionService,
     private readonly serverConfigService: ServerConfigService,
+    private readonly creatrixService: CreatrixService,
   ) {}
 
   private async seedApplications() {
@@ -262,5 +264,12 @@ export class SeederService {
         );
       }
     }
+  }
+
+  async syncStudents() {
+    return await this.creatrixService.syncStudents();
+  }
+  async syncFaculties() {
+    return await this.creatrixService.syncFaculties();
   }
 }
