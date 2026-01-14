@@ -10,7 +10,7 @@ import { AccountService } from '../account/account.service';
 import { LoginDto, MicrosoftLoginDto } from 'src/controllers/auth/auth.dto';
 import { JWTConfig } from 'src/config';
 import { LoginResponse } from './auth.dto';
-import { AccountFullResponse } from '../account/account.dto';
+import { AccountResponse } from '../account/account.dto';
 import { Op } from 'sequelize';
 import { MicrosoftAuthService } from '../microsoft-auth/microsoft-auth.service';
 import {
@@ -90,7 +90,7 @@ export class AuthService {
     );
   };
 
-  private async signToken(account: AccountFullResponse, deviceId: string) {
+  private async signToken(account: AccountResponse, deviceId: string) {
     const privateKey = fs.readFileSync(
       path.join(__dirname, '..', '..', 'keys/private.pem'),
     );
@@ -145,8 +145,10 @@ export class AuthService {
 
     if (account.isLocked)
       throw new UnauthorizedException('The account has been locked!');
-    const accountResponse =
-      await this.accountService.makeAccountFullResponse(account);
+    const accountResponse = await this.accountService.makeResponse(
+      account,
+      'all',
+    );
 
     const token = await this.signToken(accountResponse, deviceId);
 
@@ -178,7 +180,7 @@ export class AuthService {
     if (!account) {
       // The account type will be User by default when login by microsoft
 
-      account = await this.accountService.create(
+      account = await this.accountService._create(
         {
           name,
           email,
@@ -190,8 +192,10 @@ export class AuthService {
     if (account.isLocked)
       throw new UnauthorizedException('The account has been locked!');
 
-    const accountResponse =
-      await this.accountService.makeAccountFullResponse(account);
+    const accountResponse = await this.accountService.makeResponse(
+      account,
+      'all',
+    );
 
     const token = await this.signToken(accountResponse, deviceId);
 
@@ -222,7 +226,7 @@ export class AuthService {
     }
   }
 
-  makeLoginResponse(accessToken: string, account: AccountFullResponse) {
+  makeLoginResponse(accessToken: string, account: AccountResponse) {
     return new LoginResponse(accessToken, account);
   }
 

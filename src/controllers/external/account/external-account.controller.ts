@@ -8,7 +8,7 @@ import {
 } from '@nestjs/swagger';
 import { AccountService } from 'src/models/account/account.service';
 
-import { AccountFullResponse } from 'src/models/account/account.dto';
+import { AccountResponse } from 'src/models/account/account.dto';
 import { CheckCallMe } from 'src/guards/check-call-me.guard';
 import { CONSTANTS } from 'sea-platform-helpers';
 import { FindAllAccountsByIdsDto } from './external-account.dto';
@@ -29,7 +29,7 @@ export class ExternalAccountController {
   })
   @ApiOkResponse({
     description: 'Accounts fetched successfully',
-    type: AccountFullResponse,
+    type: AccountResponse,
   })
   @ApiNotFoundResponse({ description: 'Accounts not found' })
   async fetchAccountsByIds(@Body() body: FindAllAccountsByIdsDto) {
@@ -40,7 +40,7 @@ export class ExternalAccountController {
         id: { [Op.in]: ids },
       },
     });
-    return await this.accountService.makeAccountsFullResponse(accounts);
+    return await this.accountService.makeResponses(accounts, 'all');
   }
 
   @Get('/:id')
@@ -52,13 +52,15 @@ export class ExternalAccountController {
   })
   @ApiOkResponse({
     description: 'Account fetched successfully',
-    type: AccountFullResponse,
+    type: AccountResponse,
   })
   @ApiNotFoundResponse({ description: 'Account not found' })
   async fetchAccountDetails(@Param('id') id: string) {
     const account = await this.accountService.checkIsFound({ where: { id } });
-    const AccountResponse =
-      await this.accountService.makeAccountFullResponse(account);
+    const AccountResponse = await this.accountService.makeResponse(
+      account,
+      'all',
+    );
     return AccountResponse;
   }
 
@@ -73,7 +75,7 @@ export class ExternalAccountController {
   })
   @ApiOkResponse({
     description: 'Accounts fetched successfully',
-    type: AccountFullResponse,
+    type: AccountResponse,
     isArray: true,
   })
   @ApiNotFoundResponse({ description: 'Account not found' })
@@ -82,6 +84,6 @@ export class ExternalAccountController {
       CONSTANTS.Permission.PermissionKeys.FacultyOperationThesisFaculty,
       CONSTANTS.Permission.PermissionKeys.FacultyOperationThesisChair,
     ]);
-    return await this.accountService.makeAccountsFullResponse(accounts);
+    return await this.accountService.makeResponses(accounts, 'all');
   }
 }

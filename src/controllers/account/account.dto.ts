@@ -12,18 +12,18 @@ import {
   IsBoolean,
 } from 'class-validator';
 
-import { Utils } from 'sea-platform-helpers';
+import { CONSTANTS, Utils } from 'sea-platform-helpers';
 import { ArrayDataResponse, FindAllDto } from 'src/common/global.dto';
-import { AccountShortResponse } from 'src/models/account/account.dto';
+import { AccountResponse } from 'src/models/account/account.dto';
 
-export class FindAllAccountsDto extends FindAllDto {
+export class FindAllAccountsDto extends FindAllDto<CONSTANTS.Account.AccountIncludes> {
   @ApiProperty({
     required: true,
     type: String,
     description: "the role id or 'all'",
   })
   @IsString()
-  roleId: string | 'all';
+  roleId: string | CONSTANTS.Global.AllType;
 
   @ApiProperty({
     required: true,
@@ -115,12 +115,12 @@ export class CreateAccountDto {
   departmentId?: string;
 }
 
-export class AccountArrayDataResponse extends ArrayDataResponse<AccountShortResponse> {
-  @ApiProperty({ type: AccountShortResponse, isArray: true })
-  data: AccountShortResponse[];
+export class AccountArrayDataResponse extends ArrayDataResponse<AccountResponse> {
+  @ApiProperty({ type: AccountResponse, isArray: true })
+  data: AccountResponse[];
   constructor(
     totalCount: number,
-    data: Array<AccountShortResponse>,
+    data: Array<AccountResponse>,
     page: number,
     limit: number,
   ) {

@@ -135,9 +135,9 @@ export class SeederService {
     const roleIds = roles.map((r) => r.id);
 
     if (account) {
-      account = await this.accountService.update(account, data, roleIds);
+      account = await this.accountService._update(account, data, roleIds);
     } else {
-      account = await this.accountService.create(data, roleIds);
+      account = await this.accountService._create(data, roleIds);
     }
 
     return await account.save();

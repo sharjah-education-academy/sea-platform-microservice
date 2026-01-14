@@ -29,7 +29,7 @@ import {
 } from './auth.dto';
 import { AuthService } from 'src/models/auth/auth.service';
 import { LoginResponse } from 'src/models/auth/auth.dto';
-import { AccountFullResponse } from 'src/models/account/account.dto';
+import { AccountResponse } from 'src/models/account/account.dto';
 import { JWTAuthGuard } from 'src/guards/jwt-authentication.guard';
 import { AccountService } from 'src/models/account/account.service';
 import { OTPService } from 'src/models/otp/otp.service';
@@ -198,7 +198,7 @@ export class AuthController {
   @ApiOperation({ summary: 'fetch logged account details' })
   @ApiOkResponse({
     description: 'the logged account details has been fetched',
-    type: AccountFullResponse,
+    type: AccountResponse,
   })
   @ApiUnauthorizedResponse({ description: 'Invalid token' })
   async fetchLoggedAccountDetails(@Req() req: DTO.Request.AuthorizedRequest) {
@@ -206,7 +206,7 @@ export class AuthController {
     const account = await this.accountService.checkIsFound({
       where: { id: accountId },
     });
-    return this.accountService.makeAccountFullResponse(account);
+    return this.accountService.makeResponse(account, 'all');
   }
 
   @Put('me')
@@ -214,7 +214,7 @@ export class AuthController {
   @ApiOperation({ summary: 'update my account details' })
   @ApiOkResponse({
     description: 'my account details has been updated',
-    type: AccountFullResponse,
+    type: AccountResponse,
   })
   @ApiUnauthorizedResponse({ description: 'Invalid token' })
   async updateLoggedAccountDetails(
@@ -227,7 +227,7 @@ export class AuthController {
       include: [Role],
     });
     account = await this.accountService.updateMe(account, body);
-    return this.accountService.makeAccountFullResponse(account);
+    return this.accountService.makeResponse(account, 'all');
   }
 
   @Put('change-password')
@@ -337,7 +337,7 @@ export class AuthController {
   @ApiOperation({ summary: 'fetch allowed applications for me' })
   @ApiOkResponse({
     description: 'the allowed applications has been fetched',
-    type: AccountFullResponse,
+    type: AccountResponse,
   })
   @ApiUnauthorizedResponse({ description: 'Invalid token' })
   async fetchAllowedApplications(@Req() req: DTO.Request.AuthorizedRequest) {
@@ -361,7 +361,7 @@ export class AuthController {
   @ApiOperation({ summary: 'Update alert settings' })
   @ApiOkResponse({
     description: 'The account alert settings get updated successfully.',
-    type: AccountFullResponse,
+    type: AccountResponse,
   })
   @ApiUnauthorizedResponse({ description: 'Invalid credentials' })
   async updateAlertSettings(
@@ -378,6 +378,6 @@ export class AuthController {
       body.settings,
     );
 
-    return this.accountService.makeAccountFullResponse(account);
+    return this.accountService.makeResponse(account, 'all');
   }
 }

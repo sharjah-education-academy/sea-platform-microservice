@@ -7,7 +7,7 @@ import { OrganizationResponse } from '../organization/organization.dto';
 import { DepartmentResponse } from '../department/department.dto';
 import { AccountAlertSettingsResponse } from '../account-alert-setting/account-alert-setting.dto';
 
-export class AccountShortResponse {
+export class AccountResponse {
   @ApiProperty({ type: String })
   id: string;
   @ApiProperty()
@@ -29,12 +29,22 @@ export class AccountShortResponse {
   department: DepartmentResponse | undefined;
   @ApiProperty()
   preferredLanguage: string;
+  @ApiProperty({ enum: CONSTANTS.Permission.PermissionKeys, isArray: true })
+  permissionKeys: CONSTANTS.Permission.PermissionKeys[];
+  @ApiProperty({ enum: CONSTANTS.Application.ApplicationKeys, isArray: true })
+  applicationKeys: CONSTANTS.Application.ApplicationKeys[];
+
+  @ApiProperty({ type: AccountAlertSettingsResponse, nullable: true })
+  alertSettings: AccountAlertSettingsResponse;
 
   constructor(
     account: Account,
-    roles: RoleShortResponse[],
-    organization: OrganizationResponse | undefined,
-    department: DepartmentResponse | undefined,
+    roles?: RoleShortResponse[],
+    organization?: OrganizationResponse | undefined,
+    department?: DepartmentResponse | undefined,
+    permissionKeys?: CONSTANTS.Permission.PermissionKeys[],
+    applicationKeys?: CONSTANTS.Application.ApplicationKeys[],
+    alertSettings?: AccountAlertSettingsResponse,
   ) {
     this.id = account.id;
     this.name = account.name;
@@ -49,29 +59,6 @@ export class AccountShortResponse {
     this.roles = roles;
     this.organization = organization;
     this.department = department;
-  }
-}
-
-export class AccountFullResponse extends AccountShortResponse {
-  @ApiProperty({ enum: CONSTANTS.Permission.PermissionKeys, isArray: true })
-  permissionKeys: CONSTANTS.Permission.PermissionKeys[];
-  @ApiProperty({ enum: CONSTANTS.Application.ApplicationKeys, isArray: true })
-  applicationKeys: CONSTANTS.Application.ApplicationKeys[];
-
-  @ApiProperty({ type: AccountAlertSettingsResponse, nullable: true })
-  alertSettings: AccountAlertSettingsResponse;
-
-  constructor(
-    account: Account,
-    roles: RoleShortResponse[],
-    organization: OrganizationResponse | undefined,
-    department: DepartmentResponse | undefined,
-    permissionKeys: CONSTANTS.Permission.PermissionKeys[],
-    applicationKeys: CONSTANTS.Application.ApplicationKeys[],
-    alertSettings: AccountAlertSettingsResponse,
-  ) {
-    super(account, roles, organization, department);
-
     this.permissionKeys = permissionKeys;
     this.applicationKeys = applicationKeys;
     this.alertSettings = alertSettings;
