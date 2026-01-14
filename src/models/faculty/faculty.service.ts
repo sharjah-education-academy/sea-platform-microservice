@@ -7,10 +7,6 @@ import { CONSTANTS } from 'sea-platform-helpers';
 import { Services } from 'sea-backend-helpers';
 import { IncludeQuery } from 'sea-backend-helpers/dist/services/sequelize-crud.service';
 
-const FACULTY_INCLUDES = [''] as const;
-
-type FacultyIncludes = (typeof FACULTY_INCLUDES)[number];
-
 @Injectable()
 export class FacultyService extends Services.SequelizeCRUDService<
   Faculty,
@@ -26,14 +22,10 @@ export class FacultyService extends Services.SequelizeCRUDService<
 
   async makeResponse(
     entity: Faculty,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     include?: IncludeQuery<CONSTANTS.Faculty.FacultyIncludes>,
   ): Promise<FacultyResponse> {
     if (!entity) return undefined;
-    // Normalize include to array
-    // const includeArray: FacultyIncludes[] =
-    //   include === CONSTANTS.Global.AllValue
-    //     ? [...FACULTY_INCLUDES] // return all values
-    //     : (include ?? []);
 
     return new FacultyResponse(entity);
   }

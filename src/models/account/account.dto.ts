@@ -6,6 +6,8 @@ import { CONSTANTS } from 'sea-platform-helpers';
 import { OrganizationResponse } from '../organization/organization.dto';
 import { DepartmentResponse } from '../department/department.dto';
 import { AccountAlertSettingsResponse } from '../account-alert-setting/account-alert-setting.dto';
+import { StudentResponse } from '../student/student.dto';
+import { FacultyResponse } from '../faculty/faculty.dto';
 
 export class AccountResponse {
   @ApiProperty({ type: String })
@@ -37,6 +39,11 @@ export class AccountResponse {
   @ApiProperty({ type: AccountAlertSettingsResponse, nullable: true })
   alertSettings: AccountAlertSettingsResponse;
 
+  @ApiProperty({ type: StudentResponse, nullable: true })
+  student?: StudentResponse;
+  @ApiProperty({ type: FacultyResponse, nullable: true })
+  faculty?: FacultyResponse;
+
   constructor(
     account: Account,
     roles?: RoleShortResponse[],
@@ -45,6 +52,8 @@ export class AccountResponse {
     permissionKeys?: CONSTANTS.Permission.PermissionKeys[],
     applicationKeys?: CONSTANTS.Application.ApplicationKeys[],
     alertSettings?: AccountAlertSettingsResponse,
+    student?: StudentResponse,
+    faculty?: FacultyResponse,
   ) {
     this.id = account.id;
     this.name = account.name;
@@ -62,5 +71,7 @@ export class AccountResponse {
     this.permissionKeys = permissionKeys;
     this.applicationKeys = applicationKeys;
     this.alertSettings = alertSettings;
+    this.student = student;
+    this.faculty = faculty;
   }
 }

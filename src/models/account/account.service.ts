@@ -35,6 +35,8 @@ import { AccountResponse } from './account.dto';
 import { IncludeQuery } from 'sea-backend-helpers/dist/services/sequelize-crud.service';
 import { Sequelize } from 'sequelize-typescript';
 import { AccountArrayDataResponse } from 'src/controllers/account/account.dto';
+import { StudentService } from '../student/student.service';
+import { FacultyService } from '../faculty/faculty.service';
 
 const ACCOUNT_INCLUDES = [
   'roles',
@@ -61,6 +63,8 @@ export class AccountService extends Services.SequelizeCRUDService<
     private readonly departmentService: DepartmentService,
     private readonly applicationService: ApplicationService,
     private readonly accountAlertSettingService: AccountAlertSettingService,
+    private readonly studentService: StudentService,
+    private readonly facultyService: FacultyService,
     @Inject(CACHE_MANAGER)
     private readonly cache: Cache,
   ) {
@@ -519,6 +523,8 @@ export class AccountService extends Services.SequelizeCRUDService<
     ];
 
     const results = await Promise.all([
+      this.getStudent(account),
+      this.getFaculty(account),
       includeOrganization
         ? this.getOrganization(account)
         : Promise.resolve(null),
@@ -538,6 +544,8 @@ export class AccountService extends Services.SequelizeCRUDService<
     ]);
 
     const [
+      student,
+      faculty,
       organization,
       department,
       alertSettings,
@@ -546,18 +554,25 @@ export class AccountService extends Services.SequelizeCRUDService<
       applications,
     ] = results;
 
-    const [rolesResponse, organizationResponse, departmentResponse] =
-      await Promise.all([
-        includeRoles
-          ? this.roleService.makeRolesShortResponse(roles)
-          : Promise.resolve(null),
-        includeOrganization
-          ? this.organizationService.makeOrganizationResponse(organization)
-          : Promise.resolve(null),
-        includeDepartment
-          ? this.departmentService.makeDepartmentResponse(department)
-          : Promise.resolve(null),
-      ]);
+    const [
+      studentResponse,
+      facultyResponse,
+      rolesResponse,
+      organizationResponse,
+      departmentResponse,
+    ] = await Promise.all([
+      this.studentService.makeResponse(student),
+      this.facultyService.makeResponse(faculty),
+      includeRoles
+        ? this.roleService.makeRolesShortResponse(roles)
+        : Promise.resolve(null),
+      includeOrganization
+        ? this.organizationService.makeOrganizationResponse(organization)
+        : Promise.resolve(null),
+      includeDepartment
+        ? this.departmentService.makeDepartmentResponse(department)
+        : Promise.resolve(null),
+    ]);
 
     const applicationKeys = (applications || []).map((a) => a.key);
 
@@ -569,6 +584,8 @@ export class AccountService extends Services.SequelizeCRUDService<
       permissionKeys,
       applicationKeys,
       alertSettings,
+      studentResponse,
+      facultyResponse,
     );
   }
 

@@ -7,6 +7,8 @@ import { OrganizationModule } from './organization.module';
 import { DepartmentModule } from './department.module';
 import { ApplicationModule } from './application.module';
 import { AccountAlertSettingModule } from './account-alert-setting.module';
+import { StudentModule } from './student.module';
+import { FacultyModule } from './faculty.module';
 
 @Module({
   imports: [
@@ -16,6 +18,8 @@ import { AccountAlertSettingModule } from './account-alert-setting.module';
     DepartmentModule,
     ApplicationModule,
     AccountAlertSettingModule,
+    StudentModule,
+    FacultyModule,
   ],
   providers: [AccountService, ...accountProviders],
   exports: [AccountService],

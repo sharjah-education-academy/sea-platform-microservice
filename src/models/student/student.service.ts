@@ -7,10 +7,6 @@ import { CONSTANTS } from 'sea-platform-helpers';
 import { Services } from 'sea-backend-helpers';
 import { IncludeQuery } from 'sea-backend-helpers/dist/services/sequelize-crud.service';
 
-const STUDENT_INCLUDES = [''] as const;
-
-type StudentIncludes = (typeof STUDENT_INCLUDES)[number];
-
 @Injectable()
 export class StudentService extends Services.SequelizeCRUDService<
   Student,
@@ -26,24 +22,10 @@ export class StudentService extends Services.SequelizeCRUDService<
 
   async makeResponse(
     entity: Student,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     include?: IncludeQuery<CONSTANTS.Student.StudentIncludes>,
   ): Promise<StudentResponse> {
     if (!entity) return undefined;
-    // Normalize include to array
-    // const includeArray: StudentIncludes[] =
-    //   include === CONSTANTS.Global.AllValue
-    //     ? [...STUDENT_INCLUDES] // return all values
-    //     : (include ?? []);
-
-    // const [includeSections] = [includeArray.includes("")];
-
-    // // const results = await Promise.all([
-    // //   includeFaculty
-    // //     ? this.accountRemote.fetchById<DTO.Account.IAccount>(entity.facultyId)
-    // //     : Promise.resolve(null),
-    // // ]);
-
-    // // const [faculty] = results;
 
     return new StudentResponse(entity);
   }

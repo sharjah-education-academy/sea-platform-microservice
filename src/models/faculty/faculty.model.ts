@@ -38,9 +38,9 @@ export class Faculty extends Model {
   @Column({ type: DataType.STRING, allowNull: false })
   email: string;
   @Column({ type: DataType.STRING, allowNull: true })
-  address: string;
+  address?: string;
   @Column({ type: DataType.STRING, allowNull: true })
-  designation: string;
+  designation?: string;
   @Column({ type: DataType.STRING, allowNull: true })
-  contactNumber: string;
+  contactNumber?: string;
 }
