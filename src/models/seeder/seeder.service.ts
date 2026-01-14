@@ -111,6 +111,7 @@ export class SeederService {
               DEFAULT_ROLE_NAMES.PublicCalendarSuperAdmin,
               DEFAULT_ROLE_NAMES.FacultyOperationChair,
               DEFAULT_ROLE_NAMES.StrategySuperAdmin,
+              DEFAULT_ROLE_NAMES.StudentAttendanceAdmin,
             ],
           },
         },
@@ -154,7 +155,10 @@ export class SeederService {
           permissionKeys: await this.permissionService.getLeafKeys(
             r.parentPermissionKey,
           ),
-          isDefault: r.isDefault,
+
+          isStudentDefault: r.isStudentDefault,
+          isFacultyDefault: r.isFacultyDefault,
+          isEmployeeDefault: r.isEmployeeDefault,
           isDeletable: r.isDeletable,
         };
       }),
@@ -165,14 +169,18 @@ export class SeederService {
         name: roleData.name,
         description: roleData.description,
         color: roleData.color,
-        isDefault: roleData.isDefault,
+        isStudentDefault: roleData.isStudentDefault,
+        isFacultyDefault: roleData.isFacultyDefault,
+        isEmployeeDefault: roleData.isEmployeeDefault,
         isDeletable: roleData.isDeletable,
       };
 
       let role = await this.roleService.findOne({
         where: {
           name: data.name,
-          isDefault: data.isDefault,
+          isStudentDefault: data.isStudentDefault,
+          isFacultyDefault: data.isFacultyDefault,
+          isEmployeeDefault: data.isEmployeeDefault,
           isDeletable: data.isDeletable,
         },
       });

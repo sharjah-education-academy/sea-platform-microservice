@@ -6,6 +6,7 @@ import { StudentModule } from './student.module';
 import { CreatrixFacultyModule } from './creatrix-faculty.module';
 import { FacultyModule } from './faculty.module';
 import { AccountModule } from './account.module';
+import { RoleModule } from './role.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { AccountModule } from './account.module';
     StudentModule,
     FacultyModule,
     AccountModule,
+    RoleModule,
   ],
   providers: [CreatrixService],
   exports: [CreatrixService],

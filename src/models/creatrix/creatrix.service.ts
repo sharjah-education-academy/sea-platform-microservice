@@ -8,6 +8,7 @@ import { AccountService } from '../account/account.service';
 import { Faculty } from '../faculty/faculty.model';
 import { Student } from '../student/student.model';
 import { Utils } from 'sea-platform-helpers';
+import { RoleService } from '../role/role.service';
 
 @Injectable()
 export class CreatrixService {
@@ -17,6 +18,7 @@ export class CreatrixService {
     private readonly studentService: StudentService,
     private readonly facultyService: FacultyService,
     private readonly accountService: AccountService,
+    private readonly roleService: RoleService,
   ) {}
 
   private createDateFromCreatrixDate(creatrixDate: string) {
@@ -26,6 +28,19 @@ export class CreatrixService {
 
   async syncStudents() {
     const data = await this.creatrixStudentService.repository.findAll();
+
+    const { roles: studentRoles } = await this.roleService.findAll(
+      {
+        where: {
+          isStudentDefault: true,
+        },
+      },
+      0,
+      0,
+      true,
+    );
+
+    const studentRoleIds = studentRoles.map((r) => r.id);
 
     for (const record of data) {
       // Try to find account by email
@@ -106,7 +121,7 @@ export class CreatrixService {
           email: record.email,
           name: record.name,
         },
-        [], // TODO: assign default student roles
+        studentRoleIds,
       );
 
       // Create student for newly created account
@@ -120,6 +135,19 @@ export class CreatrixService {
 
   async syncFaculties() {
     const data = await this.creatrixFacultyService.repository.findAll();
+
+    const { roles: facultyRoles } = await this.roleService.findAll(
+      {
+        where: {
+          isFacultyDefault: true,
+        },
+      },
+      0,
+      0,
+      true,
+    );
+
+    const facultyRoleIds = facultyRoles.map((r) => r.id);
 
     for (const record of data) {
       // Try to find account by email
@@ -139,18 +167,18 @@ export class CreatrixService {
         );
 
         // Check if faculty already exists for this account
-        const existingStudent = await this.accountService.getStudent(account);
+        const existingFaculty = await this.accountService.getFaculty(account);
 
-        if (existingStudent) {
+        if (existingFaculty) {
           // Update existing faculty
-          await existingStudent.update(facultyData);
+          await existingFaculty.update(facultyData);
 
-          console.log(`Student updated for account ID: ${account.id}`);
+          console.log(`Faculty updated for account ID: ${account.id}`);
         } else {
           // Create new faculty for existing account
           await account.$create('faculty', facultyData);
 
-          console.log(`Student created for existing account ID: ${account.id}`);
+          console.log(`Faculty created for existing account ID: ${account.id}`);
         }
 
         continue;
@@ -164,7 +192,7 @@ export class CreatrixService {
           email: record.email,
           name: record.name,
         },
-        [], // TODO: assign default faculty roles
+        facultyRoleIds,
       );
 
       // Create faculty for newly created account

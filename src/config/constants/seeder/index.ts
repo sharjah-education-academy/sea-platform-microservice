@@ -8,28 +8,36 @@ export const DEFAULT_ROLE_NAMES = {
   FacultyOperationFaculty: 'Faculty Operation | Faculty',
   FacultyOperationStudent: 'Faculty Operation | Student',
   StrategySuperAdmin: 'Strategy | Super admin',
+  StrategyEndUser: 'Strategy | End user',
+  StudentAttendanceAdmin: 'Student Attendance | Admin',
+  StudentAttendanceFaculty: 'Student Attendance | Faculty',
+  StudentAttendanceStudent: 'Student Attendance | Student',
 };
 
 export const DEFAULT_ROLES = [
   {
     name: DEFAULT_ROLE_NAMES.PlatformAdministration,
     description: 'The default role of the platform administrator',
-    color: '#F4A610',
+    color: '#ff0062',
     applicationKey:
       CONSTANTS.Application.ApplicationKeys.PlatformAdministrationApplication,
     parentPermissionKey:
       CONSTANTS.Permission.PermissionKeys.PlatformAdministration,
-    isDefault: false,
+    isStudentDefault: false,
+    isFacultyDefault: false,
+    isEmployeeDefault: false,
     isDeletable: false,
   },
   {
     name: DEFAULT_ROLE_NAMES.PublicCalendarEndUser,
     description: 'The default role of the end user for the public calendar app',
-    color: '#F4A610',
+    color: '#029a30',
     applicationKey:
       CONSTANTS.Application.ApplicationKeys.PublicCalendarApplication,
     parentPermissionKey: CONSTANTS.Permission.PermissionKeys.ViewPublicCalendar,
-    isDefault: true,
+    isStudentDefault: false,
+    isFacultyDefault: false,
+    isEmployeeDefault: true,
     isDeletable: false,
   },
   {
@@ -40,7 +48,9 @@ export const DEFAULT_ROLES = [
     applicationKey:
       CONSTANTS.Application.ApplicationKeys.PublicCalendarApplication,
     parentPermissionKey: CONSTANTS.Permission.PermissionKeys.PublicCalendarApp,
-    isDefault: false,
+    isStudentDefault: false,
+    isFacultyDefault: false,
+    isEmployeeDefault: false,
     isDeletable: false,
   },
   {
@@ -51,40 +61,100 @@ export const DEFAULT_ROLES = [
       CONSTANTS.Application.ApplicationKeys.FacultyOperationApplication,
     parentPermissionKey:
       CONSTANTS.Permission.PermissionKeys.FacultyOperationThesisChair,
-    isDefault: false,
+    isStudentDefault: false,
+    isFacultyDefault: false,
+    isEmployeeDefault: false,
     isDeletable: false,
   },
   {
     name: DEFAULT_ROLE_NAMES.FacultyOperationFaculty,
     description:
       'The default role of the faculty for the faculty operation app',
-    color: '#112839ff',
+    color: '#7a6f51',
     applicationKey:
       CONSTANTS.Application.ApplicationKeys.FacultyOperationApplication,
     parentPermissionKey:
       CONSTANTS.Permission.PermissionKeys.FacultyOperationThesisFaculty,
-    isDefault: false,
+    isStudentDefault: false,
+    isFacultyDefault: true,
+    isEmployeeDefault: false,
     isDeletable: false,
   },
   {
     name: DEFAULT_ROLE_NAMES.FacultyOperationStudent,
     description:
       'The default role of the student for the faculty operation app',
-    color: '#1e4153ff',
+    color: '#51607a',
     applicationKey:
       CONSTANTS.Application.ApplicationKeys.FacultyOperationApplication,
     parentPermissionKey:
       CONSTANTS.Permission.PermissionKeys.FacultyOperationThesisStudent,
-    isDefault: false,
+    isStudentDefault: true,
+    isFacultyDefault: false,
+    isEmployeeDefault: false,
     isDeletable: false,
   },
   {
     name: DEFAULT_ROLE_NAMES.StrategySuperAdmin,
     description: 'The default role of the super admin for the strategy app',
-    color: '#1e4153ff',
+    color: '#5d517a',
     applicationKey: CONSTANTS.Application.ApplicationKeys.StrategyApplication,
     parentPermissionKey: CONSTANTS.Permission.PermissionKeys.StrategyApp,
-    isDefault: false,
+    isStudentDefault: false,
+    isFacultyDefault: false,
+    isEmployeeDefault: false,
+    isDeletable: false,
+  },
+  {
+    name: DEFAULT_ROLE_NAMES.StrategyEndUser,
+    description: 'The default role of the end user for the strategy app',
+    color: '#2e4f30',
+    applicationKey: CONSTANTS.Application.ApplicationKeys.StrategyApplication,
+    parentPermissionKey: CONSTANTS.Permission.PermissionKeys.ManageProjects, // TODO: make a parent permission for the strategy end user
+    isStudentDefault: false,
+    isFacultyDefault: false,
+    isEmployeeDefault: true,
+    isDeletable: false,
+  },
+  {
+    name: DEFAULT_ROLE_NAMES.StudentAttendanceAdmin,
+    description: 'The default role of the admin for the student attendance app',
+    color: '#e8bee2',
+    applicationKey:
+      CONSTANTS.Application.ApplicationKeys.StudentAttendanceApplication,
+    parentPermissionKey:
+      CONSTANTS.Permission.PermissionKeys.StudentAttendanceAdmin,
+    isStudentDefault: false,
+    isFacultyDefault: false,
+    isEmployeeDefault: false,
+    isDeletable: false,
+  },
+  {
+    name: DEFAULT_ROLE_NAMES.StudentAttendanceFaculty,
+    description:
+      'The default role of the faculty for the student attendance app',
+    color: '#543242',
+    applicationKey:
+      CONSTANTS.Application.ApplicationKeys.StudentAttendanceApplication,
+    parentPermissionKey:
+      CONSTANTS.Permission.PermissionKeys.StudentAttendanceFaculty,
+    isStudentDefault: false,
+    isFacultyDefault: true,
+    isEmployeeDefault: false,
+    isDeletable: false,
+  },
+  {
+    name: DEFAULT_ROLE_NAMES.StudentAttendanceStudent,
+    description:
+      'The default role of the student for the student attendance app',
+    color: '#17c2d1',
+    applicationKey:
+      CONSTANTS.Application.ApplicationKeys.StudentAttendanceApplication,
+    parentPermissionKey:
+      CONSTANTS.Permission.PermissionKeys.StudentAttendanceStudent,
+    isStudentDefault: true,
+    isFacultyDefault: false,
+    isEmployeeDefault: false,
     isDeletable: false,
   },
 ];
