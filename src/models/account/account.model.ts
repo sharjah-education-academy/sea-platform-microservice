@@ -11,6 +11,7 @@ import {
   BelongsToMany,
   ForeignKey,
   BelongsTo,
+  HasOne,
 } from 'sequelize-typescript';
 import { CONSTANTS, Utils } from 'sea-platform-helpers';
 
@@ -21,6 +22,8 @@ import { Utils as BackendUtils } from 'sea-backend-helpers';
 import { Department } from '../department/department.model';
 import { Organization } from '../organization/organization.model';
 import { AccountAlertSetting } from '../account-alert-setting/account-alert-setting.model';
+import { Faculty } from '../faculty/faculty.model';
+import { Student } from '../student/student.model';
 
 @Table({
   tableName: 'accounts',
@@ -48,9 +51,6 @@ export class Account extends Model {
   @Column({
     type: DataType.STRING,
     allowNull: false,
-    validate: {
-      len: [3, 50],
-    },
   })
   name: string;
 
@@ -118,6 +118,12 @@ export class Account extends Model {
 
   @BelongsTo(() => Department)
   department: Department | undefined;
+
+  @HasOne(() => Faculty)
+  faculty?: Faculty;
+
+  @HasOne(() => Student)
+  student?: Student;
 
   @BeforeCreate
   @BeforeUpdate

@@ -85,8 +85,25 @@ export class AccountService extends Services.SequelizeCRUDService<
     return Utils.Array.removeDuplicates(permissionKeys, (a, b) => a === b);
   }
 
+  async getStudent(account: Account) {
+    return account.student ? account.student : await account.$get('student');
+  }
+
+  async getFaculty(account: Account) {
+    return account.faculty ? account.faculty : await account.$get('faculty');
+  }
+
   async find(options?: FindOptions<Attributes<Account>>) {
     return await this.accountRepository.findAll(options);
+  }
+
+  async findByEmail(email: string) {
+    email = Utils.String.normalizeString(email);
+    return await this.accountRepository.findOne({
+      where: {
+        email,
+      },
+    });
   }
 
   async checkPhoneNumberRegistered(phoneNumber: string) {
@@ -597,28 +614,30 @@ export class AccountService extends Services.SequelizeCRUDService<
     include?: IncludeQuery<CONSTANTS.Account.AccountIncludes>,
   ) {
     const where: WhereOptions<Account> = {};
-    const roleWhere: WhereOptions<Role> = {};
+    // const roleWhere: WhereOptions<Role> = {};
 
     if (q) {
       where[Op.or] = ['id', 'name', 'email', 'phoneNumber'].map((c) =>
         Sequelize.where(Sequelize.fn('LOWER', Sequelize.col(`Account.${c}`)), {
-          [Op.like]: `%${q}%`,
+          [Op.like]: `%${q.toLowerCase()}%`,
         }),
       );
     }
 
     if (isDeleted) {
-      where['deletedAt'] = { [Op.ne]: null };
+      where.deletedAt = { [Op.ne]: null };
     }
 
-    if (roleId !== 'all') {
-      roleWhere['id'] = roleId;
-    }
+    const includeRole = {
+      model: Role,
+      required: roleId !== 'all', // 👈 key fix
+      ...(roleId !== 'all' && { where: { id: roleId } }),
+    };
 
     const { totalCount, rows: accounts } = await this.findAll(
       {
         where,
-        include: [{ model: Role, where: roleWhere }],
+        include: [includeRole],
         paranoid: !isDeleted,
         distinct: true,
       },

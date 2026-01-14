@@ -6,6 +6,7 @@ import {
   DataType,
   Default,
   ForeignKey,
+  BelongsTo,
 } from 'sequelize-typescript';
 import { Account } from '../account/account.model';
 
@@ -21,7 +22,15 @@ export class Faculty extends Model {
   id: string;
 
   @ForeignKey(() => Account)
+  @Column({
+    type: DataType.UUID,
+    allowNull: false,
+    unique: true, // 👈 enforces 1-to-1
+  })
   accountId: string;
+
+  @BelongsTo(() => Account)
+  account: Account;
 
   @Column({ type: DataType.STRING, allowNull: false })
   name: string;
