@@ -10,7 +10,7 @@ import { AccountService } from 'src/models/account/account.service';
 
 import { AccountResponse } from 'src/models/account/account.dto';
 import { CheckCallMe } from 'src/guards/check-call-me.guard';
-import { CONSTANTS } from 'sea-platform-helpers';
+import { CONSTANTS, Utils } from 'sea-platform-helpers';
 import { FindAllAccountsByIdsDto } from './external-account.dto';
 import { Op } from 'sequelize';
 
@@ -57,6 +57,29 @@ export class ExternalAccountController {
   @ApiNotFoundResponse({ description: 'Account not found' })
   async fetchAccountDetails(@Param('id') id: string) {
     const account = await this.accountService.checkIsFound({ where: { id } });
+    const AccountResponse = await this.accountService.makeResponse(
+      account,
+      'all',
+    );
+    return AccountResponse;
+  }
+
+  @Get('/by-email/:email')
+  @ApiOperation({ summary: 'get account details' })
+  @ApiParam({
+    name: 'email',
+    type: String,
+    description: 'Email',
+  })
+  @ApiOkResponse({
+    description: 'Account fetched successfully',
+    type: AccountResponse,
+  })
+  @ApiNotFoundResponse({ description: 'Account not found' })
+  async fetchAccountDetailsByEmail(@Param('email') email: string) {
+    const account = await this.accountService.checkIsFound({
+      where: { email: Utils.String.normalizeString(email) },
+    });
     const AccountResponse = await this.accountService.makeResponse(
       account,
       'all',
