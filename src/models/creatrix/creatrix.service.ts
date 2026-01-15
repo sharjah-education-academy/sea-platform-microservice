@@ -29,7 +29,7 @@ export class CreatrixService {
   async syncStudents() {
     const data = await this.creatrixStudentService.repository.findAll();
 
-    const { roles: studentRoles } = await this.roleService.findAll(
+    const { roles: defaultStudentRoles } = await this.roleService.findAll(
       {
         where: {
           isStudentDefault: true,
@@ -40,7 +40,7 @@ export class CreatrixService {
       true,
     );
 
-    const studentRoleIds = studentRoles.map((r) => r.id);
+    const defaultStudentRoleIds = defaultStudentRoles.map((r) => r.id);
 
     for (const record of data) {
       // Try to find account by email
@@ -95,6 +95,17 @@ export class CreatrixService {
           `Account already exists for student email: ${record.email} - Account ID: ${account.id}`,
         );
 
+        const currentRoles = await this.accountService.getRoles(account);
+        const currentRoleIds = currentRoles.map((role) => role.id);
+
+        // Merge current roles + default employee roles (deduplicated)
+        const mergedRoleIds = Array.from(
+          new Set([...currentRoleIds, ...defaultStudentRoleIds]),
+        );
+
+        // Update account roles (no account data change, just roles)
+        await this.accountService._update(account, {}, mergedRoleIds);
+
         // Check if student already exists for this account
         const existingStudent = await this.accountService.getStudent(account);
 
@@ -121,7 +132,7 @@ export class CreatrixService {
           email: record.email,
           name: record.name,
         },
-        studentRoleIds,
+        defaultStudentRoleIds,
       );
 
       // Create student for newly created account
@@ -136,7 +147,7 @@ export class CreatrixService {
   async syncFaculties() {
     const data = await this.creatrixFacultyService.repository.findAll();
 
-    const { roles: facultyRoles } = await this.roleService.findAll(
+    const { roles: defaultFacultyRoles } = await this.roleService.findAll(
       {
         where: {
           isFacultyDefault: true,
@@ -147,7 +158,7 @@ export class CreatrixService {
       true,
     );
 
-    const facultyRoleIds = facultyRoles.map((r) => r.id);
+    const defaultFacultyRoleIds = defaultFacultyRoles.map((r) => r.id);
 
     for (const record of data) {
       // Try to find account by email
@@ -165,6 +176,17 @@ export class CreatrixService {
         console.log(
           `Account already exists for faculty email: ${record.email} - Account ID: ${account.id}`,
         );
+
+        const currentRoles = await this.accountService.getRoles(account);
+        const currentRoleIds = currentRoles.map((role) => role.id);
+
+        // Merge current roles + default employee roles (deduplicated)
+        const mergedRoleIds = Array.from(
+          new Set([...currentRoleIds, ...defaultFacultyRoleIds]),
+        );
+
+        // Update account roles (no account data change, just roles)
+        await this.accountService._update(account, {}, mergedRoleIds);
 
         // Check if faculty already exists for this account
         const existingFaculty = await this.accountService.getFaculty(account);
@@ -192,7 +214,7 @@ export class CreatrixService {
           email: record.email,
           name: record.name,
         },
-        facultyRoleIds,
+        defaultFacultyRoleIds,
       );
 
       // Create faculty for newly created account
