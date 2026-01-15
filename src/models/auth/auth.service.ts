@@ -100,6 +100,9 @@ export class AuthService {
         id: account.id,
         permissionKeys: account.permissionKeys,
         applicationKeys: account.applicationKeys,
+        isStudent: Boolean(account.student),
+        isFaculty: Boolean(account.faculty),
+        isEmployee: Boolean(account.employee),
       },
       {
         privateKey,
