@@ -13,6 +13,7 @@ import { DEFAULT_ROLE_NAMES } from 'src/config/constants/seeder';
 import { RemoteEmailTemplateService } from '../remote-email-template/remote-email-template.service';
 import { RemoteEmailTemplateVersionService } from '../remote-email-template/remote-email-template-version.service';
 import { CreatrixService } from '../creatrix/creatrix.service';
+import { ERPService } from '../erp/erp.service';
 
 @Injectable()
 export class SeederService {
@@ -25,6 +26,7 @@ export class SeederService {
     private readonly emailTemplateVersionRemote: RemoteEmailTemplateVersionService,
     private readonly serverConfigService: ServerConfigService,
     private readonly creatrixService: CreatrixService,
+    private readonly ERPService: ERPService,
   ) {}
 
   private async seedApplications() {
@@ -279,5 +281,8 @@ export class SeederService {
   }
   async syncFaculties() {
     return await this.creatrixService.syncFaculties();
+  }
+  async syncEmployees() {
+    return await this.ERPService.syncEmployees();
   }
 }

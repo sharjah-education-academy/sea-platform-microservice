@@ -24,6 +24,7 @@ import { Organization } from '../organization/organization.model';
 import { AccountAlertSetting } from '../account-alert-setting/account-alert-setting.model';
 import { Faculty } from '../faculty/faculty.model';
 import { Student } from '../student/student.model';
+import { Employee } from '../employee/employee.model';
 
 @Table({
   tableName: 'accounts',
@@ -124,6 +125,9 @@ export class Account extends Model {
 
   @HasOne(() => Student)
   student?: Student;
+
+  @HasOne(() => Employee)
+  employee?: Employee;
 
   @BeforeCreate
   @BeforeUpdate

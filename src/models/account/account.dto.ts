@@ -8,6 +8,7 @@ import { DepartmentResponse } from '../department/department.dto';
 import { AccountAlertSettingsResponse } from '../account-alert-setting/account-alert-setting.dto';
 import { StudentResponse } from '../student/student.dto';
 import { FacultyResponse } from '../faculty/faculty.dto';
+import { EmployeeResponse } from '../employee/employee.dto';
 
 export class AccountResponse {
   @ApiProperty({ type: String })
@@ -43,6 +44,8 @@ export class AccountResponse {
   student?: StudentResponse;
   @ApiProperty({ type: FacultyResponse, nullable: true })
   faculty?: FacultyResponse;
+  @ApiProperty({ type: EmployeeResponse, nullable: true })
+  employee?: EmployeeResponse;
 
   constructor(
     account: Account,
@@ -54,6 +57,7 @@ export class AccountResponse {
     alertSettings?: AccountAlertSettingsResponse,
     student?: StudentResponse,
     faculty?: FacultyResponse,
+    employee?: EmployeeResponse,
   ) {
     this.id = account.id;
     this.name = account.name;
@@ -73,5 +77,6 @@ export class AccountResponse {
     this.alertSettings = alertSettings;
     this.student = student;
     this.faculty = faculty;
+    this.employee = employee;
   }
 }

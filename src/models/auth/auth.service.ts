@@ -165,29 +165,14 @@ export class AuthService {
   ) {
     const { idToken } = data;
 
-    const { email, name } =
-      await this.microsoftAuthService.verifyIdToken(idToken);
-
-    const { roles } = await this.roleService.findAll({
-      where: { isDefault: true },
-    });
+    const { email } = await this.microsoftAuthService.verifyIdToken(idToken);
 
     // create account if not exist
-    let account = await this.accountService.findOne({
-      where: { email },
-    });
-
-    if (!account) {
-      // The account type will be User by default when login by microsoft
-
-      account = await this.accountService._create(
-        {
-          name,
-          email,
-        },
-        roles.map((r) => r.id),
+    const account = await this.accountService.findByEmail(email);
+    if (!account)
+      throw new UnauthorizedException(
+        `there is no account registered with this email id ${email}`,
       );
-    }
 
     if (account.isLocked)
       throw new UnauthorizedException('The account has been locked!');

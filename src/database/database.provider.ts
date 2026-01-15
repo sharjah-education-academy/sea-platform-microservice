@@ -15,6 +15,7 @@ import { CreatrixStudent } from 'src/models/creatrix/student/student.model';
 import { CreatrixFaculty } from 'src/models/creatrix/faculty/faculty.model';
 import { Student } from 'src/models/student/student.model';
 import { Faculty } from 'src/models/faculty/faculty.model';
+import { Employee } from 'src/models/employee/employee.model';
 
 export enum DatabaseConnections {
   Main = 'Main',
@@ -56,6 +57,7 @@ export const databaseProviders = [
         Localization,
         Student,
         Faculty,
+        Employee,
       ]);
       await sequelize.sync();
       return sequelize;

@@ -9,6 +9,7 @@ import { PermissionService } from 'src/models/permission/permission.service';
 import { RemoteEmailTemplateModule } from './remote-email-template.module';
 import { RemoteEmailTemplateVersionModule } from './remote-email-template-version.module';
 import { CreatrixModule } from './creatrix.module';
+import { ERPModule } from './erp.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { CreatrixModule } from './creatrix.module';
     RemoteEmailTemplateModule,
     RemoteEmailTemplateVersionModule,
     CreatrixModule,
+    ERPModule,
   ],
   providers: [SeederService, PermissionService],
   exports: [SeederService],

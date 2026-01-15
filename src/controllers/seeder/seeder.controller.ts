@@ -29,4 +29,9 @@ export class SeederController {
   async syncFaculties() {
     return await this.seederService.syncFaculties();
   }
+
+  @Post('/sync-employees')
+  async syncEmployees() {
+    return await this.seederService.syncEmployees();
+  }
 }

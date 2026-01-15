@@ -37,6 +37,7 @@ import { Sequelize } from 'sequelize-typescript';
 import { AccountArrayDataResponse } from 'src/controllers/account/account.dto';
 import { StudentService } from '../student/student.service';
 import { FacultyService } from '../faculty/faculty.service';
+import { EmployeeService } from '../employee/employee.service';
 
 const ACCOUNT_INCLUDES = [
   'roles',
@@ -65,6 +66,7 @@ export class AccountService extends Services.SequelizeCRUDService<
     private readonly accountAlertSettingService: AccountAlertSettingService,
     private readonly studentService: StudentService,
     private readonly facultyService: FacultyService,
+    private readonly employeeService: EmployeeService,
     @Inject(CACHE_MANAGER)
     private readonly cache: Cache,
   ) {
@@ -95,6 +97,9 @@ export class AccountService extends Services.SequelizeCRUDService<
 
   async getFaculty(account: Account) {
     return account.faculty ? account.faculty : await account.$get('faculty');
+  }
+  async getEmployee(account: Account) {
+    return account.employee ? account.employee : await account.$get('employee');
   }
 
   async find(options?: FindOptions<Attributes<Account>>) {
@@ -525,6 +530,7 @@ export class AccountService extends Services.SequelizeCRUDService<
     const results = await Promise.all([
       this.getStudent(account),
       this.getFaculty(account),
+      this.getEmployee(account),
       includeOrganization
         ? this.getOrganization(account)
         : Promise.resolve(null),
@@ -546,6 +552,7 @@ export class AccountService extends Services.SequelizeCRUDService<
     const [
       student,
       faculty,
+      employee,
       organization,
       department,
       alertSettings,
@@ -557,12 +564,14 @@ export class AccountService extends Services.SequelizeCRUDService<
     const [
       studentResponse,
       facultyResponse,
+      employeeResponse,
       rolesResponse,
       organizationResponse,
       departmentResponse,
     ] = await Promise.all([
       this.studentService.makeResponse(student),
       this.facultyService.makeResponse(faculty),
+      this.employeeService.makeResponse(employee),
       includeRoles
         ? this.roleService.makeRolesShortResponse(roles)
         : Promise.resolve(null),
@@ -586,6 +595,7 @@ export class AccountService extends Services.SequelizeCRUDService<
       alertSettings,
       studentResponse,
       facultyResponse,
+      employeeResponse,
     );
   }
 

@@ -33,6 +33,8 @@ import { FacultyModule } from './modules/faculty.module';
 import { CreatrixStudentModule } from './modules/creatrix-student.module';
 import { CreatrixFacultyModule } from './modules/creatrix-faculty.module';
 import { CreatrixModule } from './modules/creatrix.module';
+import { ERPModule } from './modules/erp.module';
+import { EmployeeModule } from './modules/employee.module';
 
 @Module({
   imports: [
@@ -74,6 +76,8 @@ import { CreatrixModule } from './modules/creatrix.module';
     CreatrixModule,
     CreatrixStudentModule,
     CreatrixFacultyModule,
+    ERPModule,
+    EmployeeModule,
   ],
   controllers: [],
   providers: [],
