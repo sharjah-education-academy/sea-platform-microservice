@@ -17,6 +17,7 @@ export class EmployeeService {
   async fetchAllPagination(page: number, limit: number) {
     const offset = (page - 1) * limit;
     try {
+      console.log(`fetching employees\n`, { page, offset });
       const response = await this.http.get<IERPArrayListResponse<IERPEmployee>>(
         `?offset=${offset}&limit=${limit}`,
       );

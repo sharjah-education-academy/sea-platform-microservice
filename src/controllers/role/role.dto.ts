@@ -6,6 +6,7 @@ import {
   IsOptional,
   IsArray,
   ArrayNotEmpty,
+  IsBoolean,
 } from 'class-validator';
 import { ArrayDataResponse, FindAllDto } from 'src/common/global.dto';
 import { RoleShortResponse } from 'src/models/role/role.dto';
@@ -67,6 +68,22 @@ export class CreateRoleDto {
     message: `Each permission must be one of the valid keys: ${permissionKeys.join(', ')}`,
   })
   permissionKeys: string[];
+
+  @ApiProperty({
+    type: Boolean,
+  })
+  @IsBoolean()
+  isEmployeeDefault: boolean;
+  @ApiProperty({
+    type: Boolean,
+  })
+  @IsBoolean()
+  isFacultyDefault: boolean;
+  @ApiProperty({
+    type: Boolean,
+  })
+  @IsBoolean()
+  isStudentDefault: boolean;
 }
 
 export class RoleShortArrayDataResponse extends ArrayDataResponse<RoleShortResponse> {
@@ -118,4 +135,20 @@ export class UpdateRoleDto {
     message: `Each permission must be one of the valid keys: ${permissionKeys.join(', ')}`,
   })
   permissionKeys: CONSTANTS.Permission.PermissionKeys[];
+
+  @ApiProperty({
+    type: Boolean,
+  })
+  @IsBoolean()
+  isEmployeeDefault: boolean;
+  @ApiProperty({
+    type: Boolean,
+  })
+  @IsBoolean()
+  isFacultyDefault: boolean;
+  @ApiProperty({
+    type: Boolean,
+  })
+  @IsBoolean()
+  isStudentDefault: boolean;
 }
