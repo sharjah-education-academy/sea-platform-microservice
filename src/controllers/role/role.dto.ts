@@ -67,7 +67,7 @@ export class CreateRoleDto {
   @Decorators.IsArrayValuesIn(permissionKeys, {
     message: `Each permission must be one of the valid keys: ${permissionKeys.join(', ')}`,
   })
-  permissionKeys: string[];
+  permissionKeys: CONSTANTS.Permission.PermissionKeys[];
 
   @ApiProperty({
     type: Boolean,
