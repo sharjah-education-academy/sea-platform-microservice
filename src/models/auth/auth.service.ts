@@ -26,6 +26,7 @@ import * as ms from 'ms';
 import { Role } from '../role/role.model';
 import { CONSTANTS, Utils } from 'sea-platform-helpers';
 import { IPService } from '../ip/ip.service';
+import { CaptchaService } from '../captcha/captcha.service';
 
 @Injectable()
 export class AuthService {
@@ -40,6 +41,7 @@ export class AuthService {
     private readonly cache: Cache,
     private readonly queueService: Services.QueueService,
     private readonly IPService: IPService,
+    private readonly captchaService: CaptchaService,
   ) {}
 
   private async notifyLogin(
@@ -122,7 +124,9 @@ export class AuthService {
     userAgent: string,
     ipAddress: string,
   ) {
-    const { email, phoneNumber, password } = data;
+    const { email, phoneNumber, password, captchaToken } = data;
+
+    await this.captchaService.verify(captchaToken);
 
     let identifier: string;
 

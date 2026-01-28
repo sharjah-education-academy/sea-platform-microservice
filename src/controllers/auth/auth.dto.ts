@@ -14,7 +14,6 @@ import {
   IsArray,
   ValidateNested,
   IsIn,
-  ValidateIf,
 } from 'class-validator';
 import { CONSTANTS, Utils } from 'sea-platform-helpers';
 import { Decorators } from 'sea-backend-helpers';
@@ -53,6 +52,14 @@ export class LoginDto {
   @IsNotEmpty()
   @IsString()
   password: string;
+
+  @ApiProperty({
+    description: 'The Captcha Token',
+    example: '123456789',
+  })
+  @IsNotEmpty()
+  @IsString()
+  captchaToken: string;
 }
 
 export class ChangeMyPasswordDto {
