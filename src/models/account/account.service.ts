@@ -2,19 +2,25 @@ import {
   BadRequestException,
   Inject,
   Injectable,
-  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { Account } from './account.model';
 import { Constants } from 'src/config';
-import { Attributes, FindAndCountOptions, FindOptions } from 'sequelize';
+import {
+  Attributes,
+  CreateOptions,
+  FindOptions,
+  InstanceDestroyOptions,
+  InstanceUpdateOptions,
+  WhereOptions,
+} from 'sequelize';
 import { Op } from 'sequelize';
 import { RoleService } from '../role/role.service';
 import { Role } from '../role/role.model';
-import { AccountFullResponse, AccountShortResponse } from './account.dto';
 import {
   Utils as BackendUtils,
   Constants as BConstants,
+  Services,
 } from 'sea-backend-helpers';
 import { OrganizationService } from '../organization/organization.service';
 import { DepartmentService } from '../department/department.service';
@@ -23,12 +29,33 @@ import { Department } from '../department/department.model';
 import { ApplicationService } from '../application/application.service';
 import { CONSTANTS, Utils } from 'sea-platform-helpers';
 import { RolePermission } from '../role-permission/role-permission.model';
-
 import { Cache, CACHE_MANAGER } from '@nestjs/cache-manager';
 import { AccountAlertSettingService } from '../account-alert-setting/account-alert-setting.service';
+import { AccountResponse } from './account.dto';
+import { IncludeQuery } from 'sea-backend-helpers/dist/services/sequelize-crud.service';
+import { Sequelize } from 'sequelize-typescript';
+import { AccountArrayDataResponse } from 'src/controllers/account/account.dto';
+import { StudentService } from '../student/student.service';
+import { FacultyService } from '../faculty/faculty.service';
+import { EmployeeService } from '../employee/employee.service';
+
+const ACCOUNT_INCLUDES = [
+  'roles',
+  'organization',
+  'department',
+  'permissionKeys',
+  'applicationKeys',
+  'alertSettings',
+] as const;
+
+type AccountIncludes = (typeof ACCOUNT_INCLUDES)[number];
 
 @Injectable()
-export class AccountService {
+export class AccountService extends Services.SequelizeCRUDService<
+  Account,
+  AccountResponse,
+  CONSTANTS.Account.AccountIncludes
+> {
   constructor(
     @Inject(Constants.Database.DatabaseRepositories.AccountRepository)
     private accountRepository: typeof Account,
@@ -37,16 +64,21 @@ export class AccountService {
     private readonly departmentService: DepartmentService,
     private readonly applicationService: ApplicationService,
     private readonly accountAlertSettingService: AccountAlertSettingService,
+    private readonly studentService: StudentService,
+    private readonly facultyService: FacultyService,
+    private readonly employeeService: EmployeeService,
     @Inject(CACHE_MANAGER)
     private readonly cache: Cache,
-  ) {}
+  ) {
+    super(accountRepository, 'Account');
+  }
 
-  async getAccountRoles(account: Account) {
+  async getRoles(account: Account) {
     return account.roles ? account.roles : await account.$get('roles');
   }
 
-  async getAccountPermissionKeys(account: Account) {
-    const roles = await this.getAccountRoles(account);
+  async getPermissionKeys(account: Account) {
+    const roles = await this.getRoles(account);
 
     const rolesPermissions = await Promise.all(
       roles.map((r) => this.roleService.getRolePermissions(r)),
@@ -59,34 +91,28 @@ export class AccountService {
     return Utils.Array.removeDuplicates(permissionKeys, (a, b) => a === b);
   }
 
-  async findAll(
-    options?: FindAndCountOptions<Attributes<Account>>,
-    page: number = 1,
-    limit: number = 10,
-  ) {
-    if (page < 1) page = 1;
-    const offset = (page - 1) * limit;
-    const { count: totalCount, rows: accounts } =
-      await this.accountRepository.findAndCountAll({
-        ...options,
-        limit,
-        offset,
-      });
-    return {
-      totalCount,
-      accounts,
-    };
+  async getStudent(account: Account) {
+    return account.student ? account.student : await account.$get('student');
   }
 
-  async findOne(options?: FindOptions<Attributes<Account>>) {
-    return await this.accountRepository.findOne(options);
+  async getFaculty(account: Account) {
+    return account.faculty ? account.faculty : await account.$get('faculty');
+  }
+  async getEmployee(account: Account) {
+    return account.employee ? account.employee : await account.$get('employee');
   }
 
-  async checkIsFound(options?: FindOptions<Attributes<Account>>) {
-    const account = await this.findOne(options);
-    if (!account) throw new NotFoundException(`Account is not found!`);
+  async find(options?: FindOptions<Attributes<Account>>) {
+    return await this.accountRepository.findAll(options);
+  }
 
-    return account;
+  async findByEmail(email: string) {
+    email = Utils.String.normalizeString(email);
+    return await this.accountRepository.findOne({
+      where: {
+        email,
+      },
+    });
   }
 
   async checkPhoneNumberRegistered(phoneNumber: string) {
@@ -145,7 +171,11 @@ export class AccountService {
     return account;
   }
 
-  async create(data: Attributes<Account>, roleIds: string[]) {
+  async _create(
+    data: Attributes<Account>,
+    roleIds: string[],
+    options?: CreateOptions<Account>,
+  ) {
     const { organizationId, departmentId, ...restDate } = data;
     await Promise.all([
       this.checkPhoneNumberRegistered(data.phoneNumber),
@@ -175,35 +205,38 @@ export class AccountService {
         department,
       );
 
-    let account = await this.accountRepository.create({
-      ...restDate,
-      organizationId: organization?.id ?? null,
-      departmentId: department?.id ?? null,
-    });
-
-    account = await account.save();
-
-    await Promise.all(
-      roles.map((r) => this.roleService.assignRoleToAccount(account, r)),
-    );
-
-    return account;
+    return await super
+      .create(
+        {
+          ...restDate,
+          organizationId: organization?.id ?? null,
+          departmentId: department?.id ?? null,
+        },
+        options,
+      )
+      .then(async (created) => {
+        await Promise.all(
+          roles.map((r) => this.roleService.assignRoleToAccount(created, r)),
+        );
+        return created;
+      });
   }
 
   async updateMe(account: Account, data: Attributes<Account>) {
-    const roles = await this.getAccountRoles(account);
+    const roles = await this.getRoles(account);
 
     // pass same current role Ids
     const roleIds = roles.map((r) => r.id);
 
-    return await this.update(account, data, roleIds);
+    return await this._update(account, data, roleIds);
   }
 
-  async update(
+  async _update(
     account: Account,
-    data: Attributes<Account>,
+    data: Partial<Attributes<Account>>,
     newRoleIds: string[],
-  ) {
+    options?: InstanceUpdateOptions<Account>,
+  ): Promise<Account> {
     if (data.phoneNumber && data.phoneNumber !== account.phoneNumber)
       await this.checkPhoneNumberRegistered(data.phoneNumber);
     if (data.email && data.email !== account.email)
@@ -230,7 +263,7 @@ export class AccountService {
 
     // Fetch current and new roles
     const [currentRoles, newRoles] = await Promise.all([
-      await this.getAccountRoles(account),
+      await this.getRoles(account),
       await this.roleService.findByIds(newRoleIds),
     ]);
 
@@ -257,17 +290,21 @@ export class AccountService {
       );
     }
 
-    return await account
-      .update({
-        ...data,
-        organizationId: organization?.id ?? null,
-        departmentId: department?.id ?? null,
-      })
+    return await super
+      .update(
+        account,
+        {
+          ...data,
+          organizationId: organization?.id ?? null,
+          departmentId: department?.id ?? null,
+        },
+        options,
+      )
       .then(async (value) => {
         BackendUtils.Cache.updateIfExist(
           value.id,
           BConstants.Cache.CacheableModules.Account,
-          await this.makeAccountFullResponse(value),
+          await this.makeResponse(value, 'all'),
           this.cache as any,
         );
         return value;
@@ -280,9 +317,9 @@ export class AccountService {
     });
 
     if (account) {
-      account = await this.update(account, data, roleIds);
+      account = await this._update(account, data, roleIds);
     } else {
-      account = await this.create(data, roleIds);
+      account = await this._create(data, roleIds);
     }
 
     return await account.save();
@@ -298,17 +335,34 @@ export class AccountService {
     return account;
   }
 
-  async delete(account: Account) {
-    // TODO // to be reviewed after finish
-    await account.destroy().then(() => {
-      BackendUtils.Cache.deleteIfExist(
-        account.id,
-        BConstants.Cache.CacheableModules.Account,
-        this.cache as any,
-      );
-      return;
-    });
+  async delete(
+    account: Account,
+    options?: InstanceDestroyOptions,
+  ): Promise<Account> {
+    return await super
+      .delete(account, { ...options, force: false })
+      .then((deleted) => {
+        BackendUtils.Cache.deleteIfExist(
+          account.id,
+          BConstants.Cache.CacheableModules.Account,
+          this.cache as any,
+        );
+
+        return deleted;
+      });
   }
+
+  // async delete(account: Account) {
+  //   // TODO // to be reviewed after finish
+  //   await account.destroy().then(() => {
+  //     BackendUtils.Cache.deleteIfExist(
+  //       account.id,
+  //       BConstants.Cache.CacheableModules.Account,
+  //       this.cache as any,
+  //     );
+  //     return;
+  //   });
+  // }
 
   async changePassword(
     account: Account,
@@ -332,31 +386,8 @@ export class AccountService {
     return true;
   }
 
-  async makeAccountShortResponse(account: Account) {
-    const roles = await this.getAccountRoles(account);
-    const rolesResponse = await this.roleService.makeRolesShortResponse(roles);
-    const organization = account.organization
-      ? account.organization
-      : await account.$get('organization');
-    const department = account.department
-      ? account.department
-      : await account.$get('department');
-
-    const [organizationResponse, departmentResponse] = await Promise.all([
-      this.organizationService.makeOrganizationResponse(organization),
-      this.departmentService.makeDepartmentResponse(department),
-    ]);
-
-    return new AccountShortResponse(
-      account,
-      rolesResponse,
-      organizationResponse,
-      departmentResponse,
-    );
-  }
-
   async getAccountApplications(account: Account) {
-    const roles = await this.getAccountRoles(account);
+    const roles = await this.getRoles(account);
 
     const applicationIds = roles
       .map((role) => role.applicationId)
@@ -381,62 +412,116 @@ export class AccountService {
     return applications;
   }
 
-  async makeAccountFullResponse(account: Account) {
-    if (!account) return null;
-    const accountResponse = await this.makeAccountShortResponse(account);
-
-    const permissionKeys = await this.getAccountPermissionKeys(account);
-
-    const organization = account.organization
+  async getOrganization(account: Account) {
+    return account.organization
       ? account.organization
       : await account.$get('organization');
-    const department = account.department
+  }
+
+  async getDepartment(account: Account) {
+    return account.department
       ? account.department
       : await account.$get('department');
+  }
 
-    const [organizationResponse, departmentResponse] = await Promise.all([
-      this.organizationService.makeOrganizationResponse(organization),
-      this.departmentService.makeDepartmentResponse(department),
+  async makeResponse(
+    account: Account,
+    include?: IncludeQuery<CONSTANTS.Account.AccountIncludes>,
+  ): Promise<AccountResponse> {
+    if (!account) return null;
+
+    // Normalize include to array
+    const includeArray: AccountIncludes[] =
+      include === CONSTANTS.Global.AllValue
+        ? [...ACCOUNT_INCLUDES] // return all values
+        : (include ?? []);
+
+    const [
+      includeOrganization,
+      includeDepartment,
+      includeAlertSettings,
+      includeRoles,
+      includePermissionKeys,
+      includeApplicationKeys,
+    ] = [
+      includeArray.includes('organization'),
+      includeArray.includes('department'),
+      includeArray.includes('alertSettings'),
+      includeArray.includes('roles'),
+      includeArray.includes('permissionKeys'),
+      includeArray.includes('applicationKeys'),
+    ];
+
+    const results = await Promise.all([
+      this.getStudent(account),
+      this.getFaculty(account),
+      this.getEmployee(account),
+      includeOrganization
+        ? this.getOrganization(account)
+        : Promise.resolve(null),
+      includeDepartment ? this.getDepartment(account) : Promise.resolve(null),
+      includeAlertSettings
+        ? this.accountAlertSettingService.makeAccountAlertsSettingsResponse(
+            account,
+          )
+        : Promise.resolve(null),
+      includeRoles ? this.getRoles(account) : Promise.resolve(null),
+      includePermissionKeys
+        ? this.getPermissionKeys(account)
+        : Promise.resolve(null),
+      includeApplicationKeys
+        ? this.getAccountApplications(account)
+        : Promise.resolve(null),
     ]);
 
-    const applications = await this.getAccountApplications(account);
+    const [
+      student,
+      faculty,
+      employee,
+      organization,
+      department,
+      alertSettings,
+      roles,
+      permissionKeys,
+      applications,
+    ] = results;
 
-    const applicationKeys = applications.map((a) => a.key);
+    const [
+      studentResponse,
+      facultyResponse,
+      employeeResponse,
+      rolesResponse,
+      organizationResponse,
+      departmentResponse,
+    ] = await Promise.all([
+      this.studentService.makeResponse(student),
+      this.facultyService.makeResponse(faculty),
+      this.employeeService.makeResponse(employee),
+      includeRoles
+        ? this.roleService.makeRolesShortResponse(roles)
+        : Promise.resolve(null),
+      includeOrganization
+        ? this.organizationService.makeOrganizationResponse(organization)
+        : Promise.resolve(null),
+      includeDepartment
+        ? this.departmentService.makeDepartmentResponse(department)
+        : Promise.resolve(null),
+    ]);
 
-    const alertSettings =
-      await this.accountAlertSettingService.makeAccountAlertsSettingsResponse(
-        account,
-      );
+    const applicationKeys = (applications || []).map((a) => a.key);
 
-    return new AccountFullResponse(
+    return new AccountResponse(
       account,
-      accountResponse.roles,
+      rolesResponse,
       organizationResponse,
       departmentResponse,
       permissionKeys,
       applicationKeys,
       alertSettings,
+      studentResponse,
+      facultyResponse,
+      employeeResponse,
     );
-  }
-
-  async makeAccountsShortResponse(accounts: Account[]) {
-    const accountsResponse: AccountShortResponse[] = [];
-    for (let i = 0; i < accounts.length; i++) {
-      const account = accounts[i];
-      const AccountResponse = await this.makeAccountShortResponse(account);
-      accountsResponse.push(AccountResponse);
-    }
-    return accountsResponse;
-  }
-
-  async makeAccountsFullResponse(accounts: Account[]) {
-    const accountsResponse: AccountFullResponse[] = [];
-    for (let i = 0; i < accounts.length; i++) {
-      const account = accounts[i];
-      const AccountResponse = await this.makeAccountFullResponse(account);
-      accountsResponse.push(AccountResponse);
-    }
-    return accountsResponse;
   }
 
   async getAccountsInPermissionKeys(permissionKeys: string[]) {
@@ -470,5 +555,55 @@ export class AccountService {
       ],
     });
     return accounts;
+  }
+
+  async makeAccountArrayDataResponse(
+    page: number,
+    limit: number,
+    q: string,
+    roleId: string | CONSTANTS.Global.AllType,
+    isDeleted: boolean,
+    include?: IncludeQuery<CONSTANTS.Account.AccountIncludes>,
+  ) {
+    const where: WhereOptions<Account> = {};
+    // const roleWhere: WhereOptions<Role> = {};
+
+    if (q) {
+      where[Op.or] = ['id', 'name', 'email', 'phoneNumber'].map((c) =>
+        Sequelize.where(Sequelize.fn('LOWER', Sequelize.col(`Account.${c}`)), {
+          [Op.like]: `%${q.toLowerCase()}%`,
+        }),
+      );
+    }
+
+    if (isDeleted) {
+      where.deletedAt = { [Op.ne]: null };
+    }
+
+    const includeRole = {
+      model: Role,
+      required: roleId !== 'all', // 👈 key fix
+      ...(roleId !== 'all' && { where: { id: roleId } }),
+    };
+
+    const { totalCount, rows: accounts } = await this.findAll(
+      {
+        where,
+        include: [includeRole],
+        paranoid: !isDeleted,
+        distinct: true,
+      },
+      page,
+      limit,
+    );
+
+    const accountsResponse = await this.makeResponses(accounts, include);
+
+    return new AccountArrayDataResponse(
+      totalCount,
+      accountsResponse,
+      page,
+      limit,
+    );
   }
 }

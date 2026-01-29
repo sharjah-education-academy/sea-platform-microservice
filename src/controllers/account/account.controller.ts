@@ -30,14 +30,11 @@ import {
   AccountArrayDataResponse,
   FindAllAccountsDto,
 } from './account.dto';
-import { AccountFullResponse } from 'src/models/account/account.dto';
+import { AccountResponse } from 'src/models/account/account.dto';
 import { JWTAuthGuard } from 'src/guards/jwt-authentication.guard';
 import { Role } from 'src/models/role/role.model';
 import { JWTAuthorizationGuard } from 'src/guards/jwt-authorization.guard';
-import { WhereOptions } from 'sequelize';
-import { Account } from 'src/models/account/account.model';
 import { Op } from 'sequelize';
-import { Sequelize } from 'sequelize-typescript';
 import { CONSTANTS } from 'sea-platform-helpers';
 
 @Controller('accounts')
@@ -55,14 +52,16 @@ export class AccountController {
   @ApiOperation({ summary: 'Create a new account' })
   @ApiCreatedResponse({
     description: 'The account has been successfully created.',
-    type: AccountFullResponse,
+    type: AccountResponse,
   })
   @ApiBadRequestResponse({ description: 'Invalid input data' })
   async create(@Body() body: CreateAccountDto) {
     const { roleIds, ...data } = body;
-    const account = await this.accountService.create(data, roleIds);
-    const AccountResponse =
-      await this.accountService.makeAccountFullResponse(account);
+    const account = await this.accountService._create(data, roleIds);
+    const AccountResponse = await this.accountService.makeResponse(
+      account,
+      'all',
+    );
     return AccountResponse;
   }
 
@@ -91,46 +90,13 @@ export class AccountController {
     type: AccountArrayDataResponse,
   })
   async findAll(@Query() query: FindAllAccountsDto) {
-    const { q, roleId, isDeleted } = query;
-
-    const where: WhereOptions<Account> = {};
-    const roleWhere: WhereOptions<Role> = {};
-
-    if (q) {
-      where[Op.or] = ['id', 'name', 'email', 'phoneNumber'].map((c) =>
-        Sequelize.where(Sequelize.fn('LOWER', Sequelize.col(`Account.${c}`)), {
-          [Op.like]: `%${q}%`,
-        }),
-      );
-    }
-
-    if (isDeleted) {
-      where['deletedAt'] = { [Op.ne]: null };
-    }
-
-    if (roleId !== 'all') {
-      roleWhere['id'] = roleId;
-    }
-
-    const { totalCount, accounts } = await this.accountService.findAll(
-      {
-        where,
-        include: [{ model: Role, where: roleWhere }],
-        paranoid: !isDeleted,
-        distinct: true,
-      },
+    return await this.accountService.makeAccountArrayDataResponse(
       query.page,
       query.limit,
-    );
-
-    const accountsResponse =
-      await this.accountService.makeAccountsShortResponse(accounts);
-
-    return new AccountArrayDataResponse(
-      totalCount,
-      accountsResponse,
-      query.page,
-      query.limit,
+      query.q,
+      query.roleId,
+      query.isDeleted,
+      ['roles', 'department', 'organization'], // TODO: query.include to be passed from the frontend
     );
   }
 
@@ -148,13 +114,15 @@ export class AccountController {
   })
   @ApiOkResponse({
     description: 'Account fetched successfully',
-    type: AccountFullResponse,
+    type: AccountResponse,
   })
   @ApiNotFoundResponse({ description: 'Account not found' })
   async fetchAccountDetails(@Param('id') id: string) {
     const account = await this.accountService.checkIsFound({ where: { id } });
-    const AccountResponse =
-      await this.accountService.makeAccountFullResponse(account);
+    const AccountResponse = await this.accountService.makeResponse(
+      account,
+      'all',
+    );
     return AccountResponse;
   }
 
@@ -172,7 +140,7 @@ export class AccountController {
   })
   @ApiOkResponse({
     description: 'Account updated successfully',
-    type: AccountFullResponse,
+    type: AccountResponse,
   })
   @ApiNotFoundResponse({ description: 'Account not found' })
   async updateAccountDetails(
@@ -184,13 +152,15 @@ export class AccountController {
       where: { id },
       include: [Role],
     });
-    await this.accountService.update(account, data, roleIds);
+    await this.accountService._update(account, data, roleIds);
     account = await this.accountService.checkIsFound({
       where: { id },
       include: [Role],
     });
-    const AccountResponse =
-      await this.accountService.makeAccountFullResponse(account);
+    const AccountResponse = await this.accountService.makeResponse(
+      account,
+      'all',
+    );
     return AccountResponse;
   }
 
@@ -233,13 +203,13 @@ export class AccountController {
   })
   @ApiOkResponse({
     description: 'the lock status has been changed successfully',
-    type: AccountFullResponse,
+    type: AccountResponse,
   })
   @ApiNotFoundResponse({ description: 'Account not found' })
   async toggleLock(@Param('id') id: string) {
     let account = await this.accountService.checkIsFound({ where: { id } });
     account = await this.accountService.toggleLockStatus(account);
-    return await this.accountService.makeAccountFullResponse(account);
+    return await this.accountService.makeResponse(account, 'all');
   }
 
   @Put('/:id/restore')
@@ -256,7 +226,7 @@ export class AccountController {
   })
   @ApiOkResponse({
     description: 'the account has been restored successfully',
-    type: AccountFullResponse,
+    type: AccountResponse,
   })
   @ApiNotFoundResponse({ description: 'Account not found' })
   async restore(@Param('id') id: string) {
@@ -265,7 +235,7 @@ export class AccountController {
       paranoid: false,
     });
     account = await this.accountService.restore(account);
-    return await this.accountService.makeAccountFullResponse(account);
+    return await this.accountService.makeResponse(account, 'all');
   }
 
   @Delete('/:id/soft-delete')
@@ -282,14 +252,16 @@ export class AccountController {
   })
   @ApiNoContentResponse({
     description: 'Account successfully soft deleted',
-    type: AccountFullResponse,
+    type: AccountResponse,
   })
   @ApiNotFoundResponse({ description: 'Account not found' })
   async softDelete(@Param('id') id: string) {
     const account = await this.accountService.checkIsFound({ where: { id } });
     await this.accountService.delete(account);
-    const AccountResponse =
-      await this.accountService.makeAccountFullResponse(account);
+    const AccountResponse = await this.accountService.makeResponse(
+      account,
+      'all',
+    );
     return AccountResponse;
   }
 
@@ -307,7 +279,7 @@ export class AccountController {
   })
   @ApiNoContentResponse({
     description: 'Account successfully force deleted',
-    type: AccountFullResponse,
+    type: AccountResponse,
   })
   @ApiNotFoundResponse({ description: 'Account not found' })
   // eslint-disable-next-line @typescript-eslint/no-unused-vars

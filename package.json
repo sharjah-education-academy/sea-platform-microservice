@@ -102,6 +102,11 @@
       "**/*.(t|j)s"
     ],
     "coverageDirectory": "../coverage",
-    "testEnvironment": "node"
+    "testEnvironment": "node",
+    "moduleNameMapper": {
+      "^src/(.*)$": "<rootDir>/$1",
+      "^sea-platform-helpers$": "<rootDir>/../node_modules/sea-platform-helpers",
+      "^sea-backend-helpers$": "<rootDir>/../node_modules/sea-backend-helpers"
+    }
   }
 }

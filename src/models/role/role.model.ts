@@ -57,12 +57,23 @@ export class Role extends Model {
   })
   isDeletable: boolean;
 
-  @Default(false)
   @Column({
     type: DataType.BOOLEAN,
     allowNull: false,
   })
-  isDefault: boolean;
+  isStudentDefault: boolean;
+
+  @Column({
+    type: DataType.BOOLEAN,
+    allowNull: false,
+  })
+  isFacultyDefault: boolean;
+
+  @Column({
+    type: DataType.BOOLEAN,
+    allowNull: false,
+  })
+  isEmployeeDefault: boolean;
 
   @BelongsToMany(() => Account, () => AccountRoles)
   accounts: Account[];

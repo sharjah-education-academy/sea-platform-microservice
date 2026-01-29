@@ -10,7 +10,7 @@ import { AccountService } from '../account/account.service';
 import { LoginDto, MicrosoftLoginDto } from 'src/controllers/auth/auth.dto';
 import { JWTConfig } from 'src/config';
 import { LoginResponse } from './auth.dto';
-import { AccountFullResponse } from '../account/account.dto';
+import { AccountResponse } from '../account/account.dto';
 import { Op } from 'sequelize';
 import { MicrosoftAuthService } from '../microsoft-auth/microsoft-auth.service';
 import {
@@ -26,6 +26,7 @@ import * as ms from 'ms';
 import { Role } from '../role/role.model';
 import { CONSTANTS, Utils } from 'sea-platform-helpers';
 import { IPService } from '../ip/ip.service';
+import { CaptchaService } from '../captcha/captcha.service';
 
 @Injectable()
 export class AuthService {
@@ -40,6 +41,7 @@ export class AuthService {
     private readonly cache: Cache,
     private readonly queueService: Services.QueueService,
     private readonly IPService: IPService,
+    private readonly captchaService: CaptchaService,
   ) {}
 
   private async notifyLogin(
@@ -90,7 +92,7 @@ export class AuthService {
     );
   };
 
-  private async signToken(account: AccountFullResponse, deviceId: string) {
+  private async signToken(account: AccountResponse, deviceId: string) {
     const privateKey = fs.readFileSync(
       path.join(__dirname, '..', '..', 'keys/private.pem'),
     );
@@ -100,6 +102,9 @@ export class AuthService {
         id: account.id,
         permissionKeys: account.permissionKeys,
         applicationKeys: account.applicationKeys,
+        isStudent: Boolean(account.student),
+        isFaculty: Boolean(account.faculty),
+        isEmployee: Boolean(account.employee),
       },
       {
         privateKey,
@@ -119,7 +124,9 @@ export class AuthService {
     userAgent: string,
     ipAddress: string,
   ) {
-    const { email, phoneNumber, password } = data;
+    const { email, phoneNumber, password, captchaToken } = data;
+
+    await this.captchaService.verify(captchaToken);
 
     let identifier: string;
 
@@ -145,8 +152,10 @@ export class AuthService {
 
     if (account.isLocked)
       throw new UnauthorizedException('The account has been locked!');
-    const accountResponse =
-      await this.accountService.makeAccountFullResponse(account);
+    const accountResponse = await this.accountService.makeResponse(
+      account,
+      'all',
+    );
 
     const token = await this.signToken(accountResponse, deviceId);
 
@@ -163,35 +172,22 @@ export class AuthService {
   ) {
     const { idToken } = data;
 
-    const { email, name } =
-      await this.microsoftAuthService.verifyIdToken(idToken);
-
-    const { roles } = await this.roleService.findAll({
-      where: { isDefault: true },
-    });
+    const { email } = await this.microsoftAuthService.verifyIdToken(idToken);
 
     // create account if not exist
-    let account = await this.accountService.findOne({
-      where: { email },
-    });
-
-    if (!account) {
-      // The account type will be User by default when login by microsoft
-
-      account = await this.accountService.create(
-        {
-          name,
-          email,
-        },
-        roles.map((r) => r.id),
+    const account = await this.accountService.findByEmail(email);
+    if (!account)
+      throw new UnauthorizedException(
+        `there is no account registered with this email id ${email}`,
       );
-    }
 
     if (account.isLocked)
       throw new UnauthorizedException('The account has been locked!');
 
-    const accountResponse =
-      await this.accountService.makeAccountFullResponse(account);
+    const accountResponse = await this.accountService.makeResponse(
+      account,
+      'all',
+    );
 
     const token = await this.signToken(accountResponse, deviceId);
 
@@ -222,7 +218,7 @@ export class AuthService {
     }
   }
 
-  makeLoginResponse(accessToken: string, account: AccountFullResponse) {
+  makeLoginResponse(accessToken: string, account: AccountResponse) {
     return new LoginResponse(accessToken, account);
   }
 

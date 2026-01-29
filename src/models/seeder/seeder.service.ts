@@ -12,6 +12,8 @@ import { Op } from 'sequelize';
 import { DEFAULT_ROLE_NAMES } from 'src/config/constants/seeder';
 import { RemoteEmailTemplateService } from '../remote-email-template/remote-email-template.service';
 import { RemoteEmailTemplateVersionService } from '../remote-email-template/remote-email-template-version.service';
+import { CreatrixService } from '../creatrix/creatrix.service';
+import { ERPService } from '../erp/erp.service';
 
 @Injectable()
 export class SeederService {
@@ -23,6 +25,8 @@ export class SeederService {
     private readonly emailTemplateRemote: RemoteEmailTemplateService,
     private readonly emailTemplateVersionRemote: RemoteEmailTemplateVersionService,
     private readonly serverConfigService: ServerConfigService,
+    private readonly creatrixService: CreatrixService,
+    private readonly ERPService: ERPService,
   ) {}
 
   private async seedApplications() {
@@ -109,6 +113,7 @@ export class SeederService {
               DEFAULT_ROLE_NAMES.PublicCalendarSuperAdmin,
               DEFAULT_ROLE_NAMES.FacultyOperationChair,
               DEFAULT_ROLE_NAMES.StrategySuperAdmin,
+              DEFAULT_ROLE_NAMES.StudentAttendanceAdmin,
             ],
           },
         },
@@ -133,9 +138,9 @@ export class SeederService {
     const roleIds = roles.map((r) => r.id);
 
     if (account) {
-      account = await this.accountService.update(account, data, roleIds);
+      account = await this.accountService._update(account, data, roleIds);
     } else {
-      account = await this.accountService.create(data, roleIds);
+      account = await this.accountService._create(data, roleIds);
     }
 
     return await account.save();
@@ -152,7 +157,10 @@ export class SeederService {
           permissionKeys: await this.permissionService.getLeafKeys(
             r.parentPermissionKey,
           ),
-          isDefault: r.isDefault,
+
+          isStudentDefault: r.isStudentDefault,
+          isFacultyDefault: r.isFacultyDefault,
+          isEmployeeDefault: r.isEmployeeDefault,
           isDeletable: r.isDeletable,
         };
       }),
@@ -163,14 +171,18 @@ export class SeederService {
         name: roleData.name,
         description: roleData.description,
         color: roleData.color,
-        isDefault: roleData.isDefault,
+        isStudentDefault: roleData.isStudentDefault,
+        isFacultyDefault: roleData.isFacultyDefault,
+        isEmployeeDefault: roleData.isEmployeeDefault,
         isDeletable: roleData.isDeletable,
       };
 
       let role = await this.roleService.findOne({
         where: {
           name: data.name,
-          isDefault: data.isDefault,
+          isStudentDefault: data.isStudentDefault,
+          isFacultyDefault: data.isFacultyDefault,
+          isEmployeeDefault: data.isEmployeeDefault,
           isDeletable: data.isDeletable,
         },
       });
@@ -262,5 +274,15 @@ export class SeederService {
         );
       }
     }
+  }
+
+  async syncStudents() {
+    return await this.creatrixService.syncStudents();
+  }
+  async syncFaculties() {
+    return await this.creatrixService.syncFaculties();
+  }
+  async syncEmployees() {
+    return await this.ERPService.syncEmployees();
   }
 }

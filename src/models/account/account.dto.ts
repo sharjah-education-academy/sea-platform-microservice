@@ -6,8 +6,11 @@ import { CONSTANTS } from 'sea-platform-helpers';
 import { OrganizationResponse } from '../organization/organization.dto';
 import { DepartmentResponse } from '../department/department.dto';
 import { AccountAlertSettingsResponse } from '../account-alert-setting/account-alert-setting.dto';
+import { StudentResponse } from '../student/student.dto';
+import { FacultyResponse } from '../faculty/faculty.dto';
+import { EmployeeResponse } from '../employee/employee.dto';
 
-export class AccountShortResponse {
+export class AccountResponse {
   @ApiProperty({ type: String })
   id: string;
   @ApiProperty()
@@ -29,12 +32,32 @@ export class AccountShortResponse {
   department: DepartmentResponse | undefined;
   @ApiProperty()
   preferredLanguage: string;
+  @ApiProperty({ enum: CONSTANTS.Permission.PermissionKeys, isArray: true })
+  permissionKeys: CONSTANTS.Permission.PermissionKeys[];
+  @ApiProperty({ enum: CONSTANTS.Application.ApplicationKeys, isArray: true })
+  applicationKeys: CONSTANTS.Application.ApplicationKeys[];
+
+  @ApiProperty({ type: AccountAlertSettingsResponse, nullable: true })
+  alertSettings: AccountAlertSettingsResponse;
+
+  @ApiProperty({ type: StudentResponse, nullable: true })
+  student?: StudentResponse;
+  @ApiProperty({ type: FacultyResponse, nullable: true })
+  faculty?: FacultyResponse;
+  @ApiProperty({ type: EmployeeResponse, nullable: true })
+  employee?: EmployeeResponse;
 
   constructor(
     account: Account,
-    roles: RoleShortResponse[],
-    organization: OrganizationResponse | undefined,
-    department: DepartmentResponse | undefined,
+    roles?: RoleShortResponse[],
+    organization?: OrganizationResponse | undefined,
+    department?: DepartmentResponse | undefined,
+    permissionKeys?: CONSTANTS.Permission.PermissionKeys[],
+    applicationKeys?: CONSTANTS.Application.ApplicationKeys[],
+    alertSettings?: AccountAlertSettingsResponse,
+    student?: StudentResponse,
+    faculty?: FacultyResponse,
+    employee?: EmployeeResponse,
   ) {
     this.id = account.id;
     this.name = account.name;
@@ -49,31 +72,11 @@ export class AccountShortResponse {
     this.roles = roles;
     this.organization = organization;
     this.department = department;
-  }
-}
-
-export class AccountFullResponse extends AccountShortResponse {
-  @ApiProperty({ enum: CONSTANTS.Permission.PermissionKeys, isArray: true })
-  permissionKeys: CONSTANTS.Permission.PermissionKeys[];
-  @ApiProperty({ enum: CONSTANTS.Application.ApplicationKeys, isArray: true })
-  applicationKeys: CONSTANTS.Application.ApplicationKeys[];
-
-  @ApiProperty({ type: AccountAlertSettingsResponse, nullable: true })
-  alertSettings: AccountAlertSettingsResponse;
-
-  constructor(
-    account: Account,
-    roles: RoleShortResponse[],
-    organization: OrganizationResponse | undefined,
-    department: DepartmentResponse | undefined,
-    permissionKeys: CONSTANTS.Permission.PermissionKeys[],
-    applicationKeys: CONSTANTS.Application.ApplicationKeys[],
-    alertSettings: AccountAlertSettingsResponse,
-  ) {
-    super(account, roles, organization, department);
-
     this.permissionKeys = permissionKeys;
     this.applicationKeys = applicationKeys;
     this.alertSettings = alertSettings;
+    this.student = student;
+    this.faculty = faculty;
+    this.employee = employee;
   }
 }

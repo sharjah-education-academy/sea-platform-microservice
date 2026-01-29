@@ -43,7 +43,7 @@ export class RoleService {
 
   async create(
     data: Attributes<Role>,
-    permissionKeys: string[],
+    permissionKeys: CONSTANTS.Permission.PermissionKeys[],
     applicationKey: CONSTANTS.Application.ApplicationKeys,
   ) {
     const application = await this.applicationService.checkIsFound({
