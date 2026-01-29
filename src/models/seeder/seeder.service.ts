@@ -53,7 +53,7 @@ export class SeederService {
   }
 
   async seedEmailTemplates() {
-    console.log('seedEmailTemplates');
+    console.log('seedEmailTemplates: ', CONSTANTS.Email.EmailTemplates.length);
     for (const email of CONSTANTS.Email.EmailTemplates) {
       let existingEmail = await this.emailTemplateRemote.findByCode(email.code);
       console.log('existingEmail: ', existingEmail);

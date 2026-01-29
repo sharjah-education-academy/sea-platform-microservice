@@ -5,13 +5,32 @@ import { Attributes, FindOptions } from 'sequelize';
 import { Utils } from 'sea-platform-helpers';
 import { Account } from '../account/account.model';
 import { CONSTANTS } from 'sea-platform-helpers';
+import { Services, Constants as BConstants } from 'sea-backend-helpers';
 
 @Injectable()
 export class OTPService {
   constructor(
     @Inject(Constants.Database.DatabaseRepositories.OTPRepository)
     private otpRepository: typeof OTP,
+    private readonly queueService: Services.QueueService,
   ) {}
+
+  async sendPasswordResetVerificationCode(
+    accountId: string,
+    otp: string,
+    expireInMinutes: number,
+  ) {
+    console.log('sendPasswordResetVerificationCode');
+    this.queueService.addJob(
+      BConstants.Queue.Messages.Email,
+      'PasswordResetVerificationCode',
+      {
+        accountId,
+        otp,
+        expireInMinutes,
+      },
+    );
+  }
 
   async findByIdentifier(identifier: string) {
     return await this.findOne({ where: { identifier } });
@@ -28,21 +47,31 @@ export class OTPService {
       Date.now() + CONSTANTS.OTP.OTPExpiresAfterXMinutes * 60 * 1000,
     );
 
-    const otp = await this.findByIdentifier(identifier);
+    let otp = await this.findByIdentifier(identifier);
     if (otp) {
       otp.otpCode = otpCode;
       otp.expiresAt = expiresAt;
       otp.remainingTries = CONSTANTS.OTP.NumberOfTries;
       otp.accountId = account?.id || null;
-      return await otp.save();
+      otp = await otp.save();
     } else {
-      return await this.otpRepository.create({
+      otp = await this.otpRepository.create({
         otpCode,
         expiresAt,
         identifier,
         accountId: account?.id || null,
       });
     }
+
+    if (account) {
+      this.sendPasswordResetVerificationCode(
+        account.id,
+        otpCode,
+        CONSTANTS.OTP.OTPExpiresAfterXMinutes,
+      );
+    }
+
+    return otp;
   }
 
   async checkValidity(identifier: string, OTPCode: string) {
