@@ -21,7 +21,6 @@ import {
   ApplicationArrayDataResponse,
   FindAllApplicationsDto,
   UpdateApplicationDto,
-  UpdateApplicationStatusDto,
 } from './application.dto';
 import { JWTAuthGuard } from 'src/guards/jwt-authentication.guard';
 import { ApplicationResponse } from 'src/models/application/application.dto';
@@ -70,14 +69,14 @@ export class ApplicationController {
     isArray: true,
   })
   async findAllWithoutPagination() {
-    const { applications } = await this.applicationService.findAll(
+    const { rows: applications } = await this.applicationService.findAll(
       {},
       0,
       0,
       true,
     );
     const applicationsResponse =
-      await this.applicationService.makeApplicationsResponse(applications);
+      await this.applicationService.makeResponses(applications);
     return applicationsResponse;
   }
 
@@ -103,7 +102,7 @@ export class ApplicationController {
       where: { id },
     });
     const applicationResponse =
-      await this.applicationService.makeApplicationResponse(application);
+      await this.applicationService.makeResponse(application);
     return applicationResponse;
   }
 
@@ -128,53 +127,13 @@ export class ApplicationController {
     @Param('id') id: string,
     @Body() body: UpdateApplicationDto,
   ) {
-    const { iconFileId, ...data } = body;
-
     let application = await this.applicationService.checkIsFound({
       where: { id },
     });
-    application = await this.applicationService.update(
-      application,
-      data,
-      iconFileId,
-    );
+    application = await this.applicationService.update(application, body);
 
     const applicationResponse =
-      await this.applicationService.makeApplicationResponse(application);
-    return applicationResponse;
-  }
-
-  @Put('/:id/status')
-  @UseGuards(
-    new JWTAuthorizationGuard([
-      CONSTANTS.Permission.PermissionKeys.ManageApplicationUpdateDetails,
-    ]),
-  )
-  @ApiOperation({ summary: 'update application details' })
-  @ApiParam({
-    name: 'id',
-    type: String,
-    description: 'ID',
-  })
-  @ApiOkResponse({
-    description: 'Application updated successfully',
-    type: ApplicationResponse,
-  })
-  @ApiNotFoundResponse({ description: 'Application not found' })
-  async updateApplicationStatus(
-    @Param('id') id: string,
-    @Body() body: UpdateApplicationStatusDto,
-  ) {
-    let application = await this.applicationService.checkIsFound({
-      where: { id },
-    });
-    application = await this.applicationService.updateStatus(
-      application,
-      body.status,
-    );
-
-    const applicationResponse =
-      await this.applicationService.makeApplicationResponse(application);
+      await this.applicationService.makeResponse(application);
     return applicationResponse;
   }
 }

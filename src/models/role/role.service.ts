@@ -123,7 +123,7 @@ export class RoleService {
       ? role.application
       : await role.$get('application');
     const applicationResponse =
-      await this.applicationService.makeApplicationResponse(application);
+      await this.applicationService.makeResponse(application);
     return new RoleShortResponse(role, applicationResponse);
   }
 
@@ -170,7 +170,7 @@ export class RoleService {
       ? role.application
       : await role.$get('application');
     const applicationResponse =
-      await this.applicationService.makeApplicationResponse(application);
+      await this.applicationService.makeResponse(application);
 
     const rolePermissions = await this.getRolePermissions(role);
 

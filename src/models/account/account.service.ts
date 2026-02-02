@@ -393,7 +393,7 @@ export class AccountService extends Services.SequelizeCRUDService<
       .map((role) => role.applicationId)
       .filter((value, index, self) => self.indexOf(value) === index);
 
-    const { applications } = await this.applicationService.findAll(
+    const { rows: applications } = await this.applicationService.findAll(
       {
         where: {
           id: {

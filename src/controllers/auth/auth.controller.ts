@@ -351,7 +351,7 @@ export class AuthController {
       await this.accountService.getAccountApplications(account);
 
     const applicationResponses =
-      await this.applicationService.makeApplicationsResponse(applications);
+      await this.applicationService.makeResponses(applications);
 
     return applicationResponses;
   }
