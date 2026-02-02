@@ -89,42 +89,24 @@ export class AuthController {
       clientIp,
     );
 
-    console.log('login success:\n', loginResponse.accessToken);
-
     const expiresIn = JWTConfig.JWT_OPTIONS.expiresIn;
-    // let ttlSeconds: number;
-
-    // if (typeof expiresIn === 'string') {
-    //   ttlSeconds = Math.floor(ms(expiresIn));
-    // } else {
-    //   ttlSeconds = expiresIn * 1000;
-    // }
-
-    let maxAgeMs: number;
+    let ttlSeconds: number;
 
     if (typeof expiresIn === 'string') {
-      maxAgeMs = ms(expiresIn); // already ms
+      ttlSeconds = Math.floor(ms(expiresIn));
     } else {
-      maxAgeMs = expiresIn * 1000;
+      ttlSeconds = expiresIn * 1000;
     }
 
-    // res.cookie(CONSTANTS.JWT.JWTCookieKey, loginResponse.accessToken, {
-    //   httpOnly: false,
-    //   secure: true,
-    //   sameSite: 'none',
-    //   domain: sharedCookieDomain, // Share across subdomains
-    //   path: '/',
-    //   maxAge: ttlSeconds,
-    // });
-
     res.cookie(CONSTANTS.JWT.JWTCookieKey, loginResponse.accessToken, {
-      httpOnly: true,
+      httpOnly: false,
       secure: true,
       sameSite: 'none',
-      domain: sharedCookieDomain,
+      domain: sharedCookieDomain, // Share across subdomains
       path: '/',
-      maxAge: maxAgeMs,
+      maxAge: ttlSeconds,
     });
+
     return loginResponse;
   }
 
@@ -153,7 +135,7 @@ export class AuthController {
     const sharedCookieDomain =
       this.serverConfigService.get<string>('SHARED_COOKIE_DOMAIN') ||
       '.platform.sea.ac.ae';
-    const LoginResponse = await this.authService.microsoftLogin(
+    const loginResponse = await this.authService.microsoftLogin(
       body,
       deviceId,
       userAgent,
@@ -169,7 +151,7 @@ export class AuthController {
       ttlSeconds = expiresIn * 1000;
     }
 
-    res.cookie(CONSTANTS.JWT.JWTCookieKey, LoginResponse.accessToken, {
+    res.cookie(CONSTANTS.JWT.JWTCookieKey, loginResponse.accessToken, {
       httpOnly: false,
       secure: true,
       sameSite: 'none',
@@ -177,7 +159,7 @@ export class AuthController {
       path: '/',
       maxAge: ttlSeconds,
     });
-    return LoginResponse;
+    return loginResponse;
   }
 
   @Post('logout')
