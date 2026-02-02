@@ -92,21 +92,38 @@ export class AuthController {
     console.log('login success:\n', loginResponse.accessToken);
 
     const expiresIn = JWTConfig.JWT_OPTIONS.expiresIn;
-    let ttlSeconds: number;
+    // let ttlSeconds: number;
+
+    // if (typeof expiresIn === 'string') {
+    //   ttlSeconds = Math.floor(ms(expiresIn));
+    // } else {
+    //   ttlSeconds = expiresIn * 1000;
+    // }
+
+    let maxAgeMs: number;
 
     if (typeof expiresIn === 'string') {
-      ttlSeconds = Math.floor(ms(expiresIn));
+      maxAgeMs = ms(expiresIn); // already ms
     } else {
-      ttlSeconds = expiresIn * 1000;
+      maxAgeMs = expiresIn * 1000;
     }
 
+    // res.cookie(CONSTANTS.JWT.JWTCookieKey, loginResponse.accessToken, {
+    //   httpOnly: false,
+    //   secure: true,
+    //   sameSite: 'none',
+    //   domain: sharedCookieDomain, // Share across subdomains
+    //   path: '/',
+    //   maxAge: ttlSeconds,
+    // });
+
     res.cookie(CONSTANTS.JWT.JWTCookieKey, loginResponse.accessToken, {
-      httpOnly: false,
+      httpOnly: true,
       secure: true,
       sameSite: 'none',
-      domain: sharedCookieDomain, // Share across subdomains
+      domain: sharedCookieDomain,
       path: '/',
-      maxAge: ttlSeconds,
+      maxAge: maxAgeMs,
     });
     return loginResponse;
   }

@@ -12,6 +12,9 @@ async function bootstrap() {
 
   const configService = app.get(ServerConfigService);
 
+  const server = app.getHttpAdapter().getInstance();
+  server.set('trust proxy', 1);
+
   app.setGlobalPrefix('/api');
 
   const origin = (configService.get('CORS_ORIGIN') + '').split(',');
