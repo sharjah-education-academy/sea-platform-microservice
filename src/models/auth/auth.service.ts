@@ -125,8 +125,11 @@ export class AuthService {
     ipAddress: string,
   ) {
     const { email, phoneNumber, password, captchaToken } = data;
+    console.log('received captchaToken: ', captchaToken);
 
     await this.captchaService.verify(captchaToken);
+
+    console.log('after verify the captchaToken');
 
     let identifier: string;
 
