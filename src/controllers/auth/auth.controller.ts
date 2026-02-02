@@ -106,8 +106,7 @@ export class AuthController {
       path: '/',
       maxAge: ttlSeconds,
     });
-    return res.status(200).json(loginResponse);
-    // return loginResponse;
+    return loginResponse;
   }
 
   @Post('/microsoft/login')
