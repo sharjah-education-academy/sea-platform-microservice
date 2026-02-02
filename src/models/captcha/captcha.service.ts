@@ -23,6 +23,8 @@ export class CaptchaService {
         },
       );
 
+      console.log('data is\n', data);
+
       if (!data.success || data.score < 0.5) {
         throw new UnauthorizedException('Captcha verification failed');
       }
