@@ -89,6 +89,8 @@ export class AuthController {
       clientIp,
     );
 
+    console.log('login success:\n', loginResponse.accessToken);
+
     const expiresIn = JWTConfig.JWT_OPTIONS.expiresIn;
     let ttlSeconds: number;
 
