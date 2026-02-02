@@ -13,12 +13,14 @@ export class CaptchaService {
       'https://www.google.com/recaptcha/api/siteverify',
       null,
       {
-        params: { secret, response: token },
-        timeout: 5000,
+        params: {
+          secret,
+          response: token,
+        },
       },
     );
 
-    if (!data.success) {
+    if (!data.success || data.score < 0.5) {
       throw new UnauthorizedException('Captcha verification failed');
     }
 
