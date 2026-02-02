@@ -82,7 +82,7 @@ export class AuthController {
       this.serverConfigService.get<string>('SHARED_COOKIE_DOMAIN') ||
       '.platform.sea.ac.ae';
 
-    const LoginResponse = await this.authService.login(
+    const loginResponse = await this.authService.login(
       body,
       deviceId,
       userAgent,
@@ -98,7 +98,7 @@ export class AuthController {
       ttlSeconds = expiresIn * 1000;
     }
 
-    res.cookie(CONSTANTS.JWT.JWTCookieKey, LoginResponse.accessToken, {
+    res.cookie(CONSTANTS.JWT.JWTCookieKey, loginResponse.accessToken, {
       httpOnly: false,
       secure: true,
       sameSite: 'none',
@@ -106,7 +106,8 @@ export class AuthController {
       path: '/',
       maxAge: ttlSeconds,
     });
-    return LoginResponse;
+    return res.status(200).json(loginResponse);
+    // return loginResponse;
   }
 
   @Post('/microsoft/login')
