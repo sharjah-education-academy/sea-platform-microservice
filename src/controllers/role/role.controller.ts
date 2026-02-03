@@ -22,23 +22,22 @@ import {
 } from '@nestjs/swagger';
 import { JWTAuthGuard } from 'src/guards/jwt-authentication.guard';
 import { RoleService } from 'src/models/role/role.service';
-import {
-  CreateRoleDto,
-  FindAllRolesDto,
-  RoleShortArrayDataResponse,
-  UpdateRoleDto,
-} from './role.dto';
-import { RoleFullResponse, RoleShortResponse } from 'src/models/role/role.dto';
+import { CreateRoleDto, FindAllRolesDto, UpdateRoleDto } from './role.dto';
 import { RolePermission } from 'src/models/role-permission/role-permission.model';
 import { JWTAuthorizationGuard } from 'src/guards/jwt-authorization.guard';
 import { Account } from 'src/models/account/account.model';
 import { CONSTANTS } from 'sea-platform-helpers';
+import { RoleResponse } from 'src/models/role/role.dto';
+import { ApplicationService } from 'src/models/application/application.service';
 
 @Controller('roles')
 @ApiTags('Internal', 'Role')
 @UseGuards(JWTAuthGuard)
 export class RoleController {
-  constructor(private readonly roleService: RoleService) {}
+  constructor(
+    private readonly roleService: RoleService,
+    private readonly applicationService: ApplicationService,
+  ) {}
 
   @Post()
   @UseGuards(
@@ -49,17 +48,21 @@ export class RoleController {
   @ApiOperation({ summary: 'Create a new role' })
   @ApiCreatedResponse({
     description: 'The role has been successfully created.',
-    type: RoleShortResponse,
+    type: RoleResponse,
   })
   @ApiBadRequestResponse({ description: 'Invalid input data' })
   async create(@Body() body: CreateRoleDto) {
     const { permissionKeys, applicationKey, ...data } = body;
-    const role = await this.roleService.create(
-      data,
+
+    const application = await this.applicationService.checkIsFound({
+      where: { key: applicationKey },
+    });
+
+    const role = await this.roleService._create(
+      { ...data, applicationId: application.id },
       permissionKeys,
-      applicationKey,
     );
-    return await this.roleService.makeRoleShortResponse(role);
+    return await this.roleService.makeResponse(role, 'all');
   }
 
   @Get()
@@ -72,14 +75,15 @@ export class RoleController {
   @ApiResponse({
     status: 200,
     description: 'Retrieve a paginated list of roles',
-    type: RoleShortArrayDataResponse,
+    type: RoleResponse,
   })
   async findAll(@Query() query: FindAllRolesDto) {
-    const response = await this.roleService.makeRoleShortArrayDataResponse(
+    const response = await this.roleService.makeRoleArrayDataResponse(
       query.page,
       query.limit,
       query.q,
       query.applicationId,
+      query.include,
     );
 
     return response;
@@ -99,7 +103,7 @@ export class RoleController {
   })
   @ApiOkResponse({
     description: 'Role fetched successfully',
-    type: RoleFullResponse,
+    type: RoleResponse,
   })
   @ApiNotFoundResponse({ description: 'Role not found' })
   async fetchRoleDetails(@Param('id') id: string) {
@@ -107,7 +111,7 @@ export class RoleController {
       where: { id },
       include: [RolePermission],
     });
-    const roleResponse = await this.roleService.makeRoleFullResponse(role);
+    const roleResponse = await this.roleService.makeResponse(role, 'all');
     return roleResponse;
   }
 
@@ -125,7 +129,7 @@ export class RoleController {
   })
   @ApiOkResponse({
     description: 'Role updated successfully',
-    type: RoleFullResponse,
+    type: RoleResponse,
   })
   @ApiNotFoundResponse({ description: 'Role not found' })
   async updateRoleDetails(
@@ -136,9 +140,9 @@ export class RoleController {
     let role = await this.roleService.checkIsFound({
       where: { id },
     });
-    role = await this.roleService.update(role, data, permissionKeys);
+    role = await this.roleService._update(role, data, permissionKeys);
 
-    const roleResponse = await this.roleService.makeRoleFullResponse(role);
+    const roleResponse = await this.roleService.makeResponse(role, 'all');
     return roleResponse;
   }
 
@@ -156,7 +160,7 @@ export class RoleController {
   })
   @ApiNoContentResponse({
     description: 'Role successfully force deleted',
-    type: RoleFullResponse,
+    type: RoleResponse,
   })
   @ApiNotFoundResponse({ description: 'Role not found' })
   async delete(@Param('id') id: string) {
@@ -165,7 +169,7 @@ export class RoleController {
       include: [RolePermission, Account],
     });
     await this.roleService.delete(role);
-    const roleResponse = await this.roleService.makeRoleFullResponse(role);
+    const roleResponse = await this.roleService.makeResponse(role);
     return roleResponse;
   }
 }

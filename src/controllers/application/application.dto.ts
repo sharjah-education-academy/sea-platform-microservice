@@ -51,15 +51,6 @@ export class UpdateApplicationDto {
   status: CONSTANTS.Application.ApplicationStatuses;
 }
 
-export class UpdateApplicationStatusDto {
-  @ApiProperty({
-    description: 'The status of the application',
-    enum: CONSTANTS.Application.ApplicationStatuses,
-  })
-  @IsIn([...Object.values(CONSTANTS.Application.ApplicationStatuses)])
-  status: CONSTANTS.Application.ApplicationStatuses;
-}
-
 export class FindAllApplicationsDto extends FindAllDto {
   @ApiProperty({
     required: true,

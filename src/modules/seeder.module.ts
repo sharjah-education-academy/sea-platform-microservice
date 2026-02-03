@@ -1,28 +1,14 @@
 import { Module } from '@nestjs/common';
-import { DatabaseModule } from 'src/database/database.module';
 
 import { SeederService } from 'src/models/seeder/seeder.service';
-import { AccountModule } from './account.module';
-import { ApplicationModule } from './application.module';
+import { SyncModule } from './sync.module';
+import { ServerConfigModule } from './server-config.module';
 import { RoleModule } from './role.module';
-import { PermissionService } from 'src/models/permission/permission.service';
-import { RemoteEmailTemplateModule } from './remote-email-template.module';
-import { RemoteEmailTemplateVersionModule } from './remote-email-template-version.module';
-import { CreatrixModule } from './creatrix.module';
-import { ERPModule } from './erp.module';
+import { AccountModule } from './account.module';
 
 @Module({
-  imports: [
-    DatabaseModule,
-    AccountModule,
-    ApplicationModule,
-    RoleModule,
-    RemoteEmailTemplateModule,
-    RemoteEmailTemplateVersionModule,
-    CreatrixModule,
-    ERPModule,
-  ],
-  providers: [SeederService, PermissionService],
+  imports: [SyncModule, ServerConfigModule, RoleModule, AccountModule],
+  providers: [SeederService],
   exports: [SeederService],
 })
 export class SeederModule {}

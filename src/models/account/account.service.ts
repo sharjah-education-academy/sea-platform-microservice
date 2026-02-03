@@ -393,7 +393,7 @@ export class AccountService extends Services.SequelizeCRUDService<
       .map((role) => role.applicationId)
       .filter((value, index, self) => self.indexOf(value) === index);
 
-    const { applications } = await this.applicationService.findAll(
+    const { rows: applications } = await this.applicationService.findAll(
       {
         where: {
           id: {
@@ -498,7 +498,7 @@ export class AccountService extends Services.SequelizeCRUDService<
       this.facultyService.makeResponse(faculty),
       this.employeeService.makeResponse(employee),
       includeRoles
-        ? this.roleService.makeRolesShortResponse(roles)
+        ? this.roleService.makeResponses(roles)
         : Promise.resolve(null),
       includeOrganization
         ? this.organizationService.makeOrganizationResponse(organization)
@@ -525,7 +525,7 @@ export class AccountService extends Services.SequelizeCRUDService<
   }
 
   async getAccountsInPermissionKeys(permissionKeys: string[]) {
-    const { roles } = await this.roleService.findAll({
+    const { rows: roles } = await this.roleService.findAll({
       include: [
         {
           model: RolePermission,

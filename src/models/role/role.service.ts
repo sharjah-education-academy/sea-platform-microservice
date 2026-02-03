@@ -3,14 +3,18 @@ import {
   forwardRef,
   Inject,
   Injectable,
-  NotFoundException,
 } from '@nestjs/common';
 import { Constants } from 'src/config';
-import { Attributes, FindOptions, WhereOptions } from 'sequelize';
+import {
+  Attributes,
+  CreateOptions,
+  InstanceDestroyOptions,
+  InstanceUpdateOptions,
+  WhereOptions,
+} from 'sequelize';
 import { Role } from './role.model';
 import { PermissionService } from '../permission/permission.service';
-import { RoleFullResponse, RoleShortResponse } from './role.dto';
-import { RoleShortArrayDataResponse } from 'src/controllers/role/role.dto';
+import { RoleArrayDataResponse, RoleResponse } from './role.dto';
 import { Op } from 'sequelize';
 import { Account } from '../account/account.model';
 import { RolePermissionService } from '../role-permission/role-permission.service';
@@ -18,9 +22,19 @@ import { Sequelize } from 'sequelize-typescript';
 import { CONSTANTS } from 'sea-platform-helpers';
 import { ApplicationService } from '../application/application.service';
 import { AuthService } from '../auth/auth.service';
+import { Services } from 'sea-backend-helpers';
+import { IncludeQuery } from 'sea-backend-helpers/dist/services/sequelize-crud.service';
+
+const ROLE_INCLUDES = ['application', 'permissions'] as const;
+
+type RoleIncludes = (typeof ROLE_INCLUDES)[number];
 
 @Injectable()
-export class RoleService {
+export class RoleService extends Services.SequelizeCRUDService<
+  Role,
+  RoleResponse,
+  CONSTANTS.Role.RoleIncludes
+> {
   constructor(
     @Inject(Constants.Database.DatabaseRepositories.RoleRepository)
     private roleRepository: typeof Role,
@@ -29,7 +43,9 @@ export class RoleService {
     private readonly applicationService: ApplicationService,
     @Inject(forwardRef(() => AuthService))
     private readonly authService: AuthService,
-  ) {}
+  ) {
+    super(roleRepository, 'Application');
+  }
 
   async getRolePermissions(role: Role) {
     return role.rolePermissions
@@ -41,21 +57,23 @@ export class RoleService {
     return role.accounts ? role.accounts : await role.$get('accounts');
   }
 
+  async getApplication(role: Role) {
+    return role.application ? role.application : await role.$get('application');
+  }
+
   async create(
     data: Attributes<Role>,
+    options?: CreateOptions<Role>,
+  ): Promise<Role> {
+    await this.applicationService.checkIsFoundByPk(data.applicationId);
+    return await super.create(data, options);
+  }
+
+  async _create(
+    data: Attributes<Role>,
     permissionKeys: CONSTANTS.Permission.PermissionKeys[],
-    applicationKey: CONSTANTS.Application.ApplicationKeys,
   ) {
-    const application = await this.applicationService.checkIsFound({
-      where: { key: applicationKey },
-    });
-
-    const role = new Role({
-      ...data,
-      applicationId: application.id,
-    });
-
-    await role.save();
+    const role = await this.create(data);
 
     await this.rolePermissionService.createMultiForRole(permissionKeys, role);
 
@@ -63,51 +81,67 @@ export class RoleService {
   }
 
   async update(
-    role: Role,
+    entity: Role,
+    data: Partial<Role>,
+    options?: InstanceUpdateOptions<Role>,
+  ): Promise<Role> {
+    // can't change the application id
+    delete data.applicationId;
+
+    return await super.update(entity, data, options);
+  }
+
+  async _update(
+    entity: Role,
+    data: Partial<Role>,
+    permissionKeys: CONSTANTS.Permission.PermissionKeys[],
+  ) {
+    return await this.update(entity, data).then(async (updated) => {
+      const { permissionsUpdated } =
+        await this.rolePermissionService.updateKeysForRole(
+          updated,
+          permissionKeys,
+        );
+      if (permissionsUpdated) this.authService.invalidateTokensForRole(updated);
+      return updated;
+    });
+  }
+
+  async createOrUpdate(data: Attributes<Role>) {
+    const existing = await this.findOne({
+      where: {
+        name: data.name,
+        isStudentDefault: data.isStudentDefault,
+        isFacultyDefault: data.isFacultyDefault,
+        isEmployeeDefault: data.isEmployeeDefault,
+        isDeletable: data.isDeletable,
+      },
+    });
+    if (existing) return await this.update(existing, data);
+    else return await this.create(data);
+  }
+
+  async _createOrUpdate(
     data: Attributes<Role>,
     permissionKeys: CONSTANTS.Permission.PermissionKeys[],
   ) {
-    role = await role.update({ ...data });
-
-    const { permissionsUpdated } =
-      await this.rolePermissionService.updateKeysForRole(role, permissionKeys);
-    if (permissionsUpdated) this.authService.invalidateTokensForRole(role);
-
-    return role;
-  }
-
-  async findAll(
-    options?: FindOptions<Attributes<Role>>,
-    page: number = 1,
-    limit: number = 10,
-    all = false,
-  ) {
-    if (page < 1) page = 1;
-    const offset = (page - 1) * limit;
-    options = all ? options : { ...options, limit, offset };
-    const { count: totalCount, rows: roles } =
-      await this.roleRepository.findAndCountAll(options);
-    return {
-      totalCount,
-      roles,
-    };
+    const existing = await this.findOne({
+      where: {
+        name: data.name,
+        isStudentDefault: data.isStudentDefault,
+        isFacultyDefault: data.isFacultyDefault,
+        isEmployeeDefault: data.isEmployeeDefault,
+        isDeletable: data.isDeletable,
+      },
+    });
+    if (existing) return await this._update(existing, data, permissionKeys);
+    else return await this._create(data, permissionKeys);
   }
 
   async findByIds(ids: string[]) {
     return await this.roleRepository.findAll({
       where: { id: { [Op.in]: ids } },
     });
-  }
-
-  async findOne(options?: FindOptions<Attributes<Role>>) {
-    return await this.roleRepository.findOne(options);
-  }
-
-  async checkIsFound(options?: FindOptions<Attributes<Role>>) {
-    const role = await this.findOne(options);
-    if (!role) throw new NotFoundException(`Role is not found!`);
-
-    return role;
   }
 
   async assignRoleToAccount(account: Account, role: Role) {
@@ -118,30 +152,12 @@ export class RoleService {
     return await account.$remove('roles', role);
   }
 
-  async makeRoleShortResponse(role: Role) {
-    const application = role.application
-      ? role.application
-      : await role.$get('application');
-    const applicationResponse =
-      await this.applicationService.makeApplicationResponse(application);
-    return new RoleShortResponse(role, applicationResponse);
-  }
-
-  async makeRolesShortResponse(roles: Role[]) {
-    const rolesResponse: RoleShortResponse[] = [];
-    for (let i = 0; i < roles.length; i++) {
-      const role = roles[i];
-      const roleResponse = await this.makeRoleShortResponse(role);
-      rolesResponse.push(roleResponse);
-    }
-    return rolesResponse;
-  }
-
-  async makeRoleShortArrayDataResponse(
+  async makeRoleArrayDataResponse(
     page: number,
     limit: number,
     q: string,
-    applicationId: string,
+    applicationId: string | CONSTANTS.Global.AllType,
+    include?: IncludeQuery<CONSTANTS.Role.RoleIncludes>,
   ) {
     const where: WhereOptions<Role> = {};
     if (applicationId != 'all') where.applicationId = applicationId;
@@ -153,46 +169,69 @@ export class RoleService {
       );
     }
 
-    const { totalCount, roles } = await this.findAll({ where }, page, limit);
-
-    const rolesResponse = await this.makeRolesShortResponse(roles);
-
-    return new RoleShortArrayDataResponse(
-      totalCount,
-      rolesResponse,
+    const { totalCount, rows: roles } = await this.findAll(
+      { where },
       page,
       limit,
     );
+
+    const rolesResponse = await this.makeResponses(roles, include);
+
+    return new RoleArrayDataResponse(totalCount, rolesResponse, page, limit);
   }
 
-  async makeRoleFullResponse(role: Role): Promise<RoleFullResponse> {
-    const application = role.application
-      ? role.application
-      : await role.$get('application');
-    const applicationResponse =
-      await this.applicationService.makeApplicationResponse(application);
+  async makeResponse(
+    role: Role,
+    include?: IncludeQuery<CONSTANTS.Role.RoleIncludes>,
+  ): Promise<RoleResponse> {
+    if (!role) return null;
 
-    const rolePermissions = await this.getRolePermissions(role);
+    // Normalize include to array
+    const includeArray: RoleIncludes[] =
+      include === CONSTANTS.Global.AllValue
+        ? [...ROLE_INCLUDES] // return all values
+        : (include ?? []);
 
-    const permissionKeys = rolePermissions.map((p) => p.permissionKey);
+    const [includeApplication, includePermissions] = [
+      includeArray.includes('application'),
+      includeArray.includes('permissions'),
+    ];
+
+    const [application, rolePermissions] = await Promise.all([
+      includeApplication || includePermissions
+        ? this.getApplication(role)
+        : Promise.resolve(null),
+      includePermissions
+        ? this.getRolePermissions(role)
+        : Promise.resolve(null),
+    ]);
+
+    const permissionKeys = (rolePermissions || []).map((p) => p.permissionKey);
 
     const PERMISSIONS = CONSTANTS.Permission.PERMISSIONS.filter(
-      (p) => p.applicationKey === application.key,
+      (p) => p.applicationKey === application?.key,
     );
 
-    const permissionsResponse = await Promise.all(
-      PERMISSIONS.map((permission) =>
-        this.permissionService.makePermissionResponseForRole(
-          permission,
-          permissionKeys,
-        ),
-      ),
-    );
+    const [applicationResponse, permissionsResponse] = await Promise.all([
+      includeApplication
+        ? this.applicationService.makeResponse(application)
+        : Promise.resolve(null),
+      includePermissions
+        ? await Promise.all(
+            PERMISSIONS.map((permission) =>
+              this.permissionService.makePermissionResponseForRole(
+                permission,
+                permissionKeys,
+              ),
+            ),
+          )
+        : Promise.resolve(null),
+    ]);
 
-    return new RoleFullResponse(role, applicationResponse, permissionsResponse);
+    return new RoleResponse(role, applicationResponse, permissionsResponse);
   }
 
-  async delete(role: Role) {
+  async delete(role: Role, options?: InstanceDestroyOptions): Promise<Role> {
     if (!role.isDeletable)
       throw new BadRequestException(
         `Can't delete this role (${role.name}), it is not deletable`,
@@ -213,9 +252,11 @@ export class RoleService {
       this.rolePermissionService.delete(permission),
     );
 
-    // Delete the role itself
-    return await role.destroy({ force: true }).then(() => {
-      this.authService.invalidateTokensForRole(role);
-    });
+    return await super
+      .delete(role, { ...options, force: true })
+      .then((deleted) => {
+        this.authService.invalidateTokensForRole(role);
+        return deleted;
+      });
   }
 }

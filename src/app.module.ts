@@ -35,6 +35,10 @@ import { CreatrixFacultyModule } from './modules/creatrix-faculty.module';
 import { CreatrixModule } from './modules/creatrix.module';
 import { ERPModule } from './modules/erp.module';
 import { EmployeeModule } from './modules/employee.module';
+import { SyncControllerModule } from './controllers/sync/sync-controller.module';
+import { SystemControllerModule } from './controllers/system/system-controller.module';
+import { SystemModule } from './modules/system.module';
+import { HealthControllerModule } from './controllers/health/health-controller.module';
 
 @Module({
   imports: [
@@ -78,6 +82,10 @@ import { EmployeeModule } from './modules/employee.module';
     CreatrixFacultyModule,
     ERPModule,
     EmployeeModule,
+    SyncControllerModule,
+    SystemModule,
+    SystemControllerModule,
+    HealthControllerModule,
   ],
   controllers: [],
   providers: [],

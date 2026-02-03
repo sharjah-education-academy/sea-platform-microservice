@@ -17,7 +17,7 @@ export class ERPService {
   async syncEmployees() {
     const data = await this.employeeService.fetchAll();
 
-    const { roles: defaultEmployeeRoles } = await this.roleService.findAll(
+    const { rows: defaultEmployeeRoles } = await this.roleService.findAll(
       {
         where: {
           isEmployeeDefault: true,
@@ -48,6 +48,13 @@ export class ERPService {
         gender: record.Gender,
         hireDate: record.HireDate ? new Date(record.HireDate) : null,
       };
+
+      if (!record.UserName) {
+        console.log(
+          `The ERP Employee profile (${record.DisplayName}) has no username, it will be skipped!`,
+        );
+        continue;
+      }
 
       if (account) {
         console.log(
