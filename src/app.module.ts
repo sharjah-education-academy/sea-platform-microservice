@@ -36,6 +36,8 @@ import { CreatrixModule } from './modules/creatrix.module';
 import { ERPModule } from './modules/erp.module';
 import { EmployeeModule } from './modules/employee.module';
 import { SyncControllerModule } from './controllers/sync/sync-controller.module';
+import { SystemControllerModule } from './controllers/system/system-controller.module';
+import { SystemModule } from './modules/system.module';
 
 @Module({
   imports: [
@@ -80,6 +82,8 @@ import { SyncControllerModule } from './controllers/sync/sync-controller.module'
     ERPModule,
     EmployeeModule,
     SyncControllerModule,
+    SystemModule,
+    SystemControllerModule,
   ],
   controllers: [],
   providers: [],
