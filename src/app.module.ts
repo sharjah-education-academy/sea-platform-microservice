@@ -38,6 +38,7 @@ import { EmployeeModule } from './modules/employee.module';
 import { SyncControllerModule } from './controllers/sync/sync-controller.module';
 import { SystemControllerModule } from './controllers/system/system-controller.module';
 import { SystemModule } from './modules/system.module';
+import { HealthControllerModule } from './controllers/health/health-controller.module';
 
 @Module({
   imports: [
@@ -84,6 +85,7 @@ import { SystemModule } from './modules/system.module';
     SyncControllerModule,
     SystemModule,
     SystemControllerModule,
+    HealthControllerModule,
   ],
   controllers: [],
   providers: [],
