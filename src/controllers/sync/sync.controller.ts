@@ -17,16 +17,29 @@ export class SyncController {
   async syncDefaultApplications() {
     return await this.syncService.syncDefaultApplications();
   }
+
   @Post('/default-roles')
   async syncDefaultRoles() {
     return await this.syncService.syncDefaultRoles();
   }
-  @Post('/default-super-admin-account')
-  async syncDefaultSuperAdminAccount() {}
+
+  @Post('/default-email-templates')
+  async syncDefaultEmailTemplates() {
+    return await this.syncService.syncDefaultEmailTemplates();
+  }
+
   @Post('/students')
-  async syncStudentsAccounts() {}
+  async syncStudentsAccounts() {
+    return await this.syncService.syncStudentsAccounts();
+  }
+
   @Post('/faculties')
-  async syncFacultiesAccounts() {}
+  async syncFacultiesAccounts() {
+    return await this.syncService.syncFacultiesAccounts();
+  }
+
   @Post('/employees')
-  async syncEmployeesAccounts() {}
+  async syncEmployeesAccounts() {
+    return await this.syncService.syncEmployeesAccounts();
+  }
 }

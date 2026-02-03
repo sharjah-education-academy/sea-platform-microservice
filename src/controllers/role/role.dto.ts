@@ -8,15 +8,14 @@ import {
   ArrayNotEmpty,
   IsBoolean,
 } from 'class-validator';
-import { ArrayDataResponse, FindAllDto } from 'src/common/global.dto';
-import { RoleShortResponse } from 'src/models/role/role.dto';
+import { FindAllDto } from 'src/common/global.dto';
 import { CONSTANTS } from 'sea-platform-helpers';
 import { Decorators } from 'sea-backend-helpers';
 import { IsIn } from 'class-validator';
 
 const permissionKeys = [...Object.values(CONSTANTS.Permission.PermissionKeys)];
 
-export class FindAllRolesDto extends FindAllDto {
+export class FindAllRolesDto extends FindAllDto<CONSTANTS.Role.RoleIncludes> {
   @ApiProperty({
     description: 'The ID of the application to filter roles by',
     required: true,
@@ -84,20 +83,6 @@ export class CreateRoleDto {
   })
   @IsBoolean()
   isStudentDefault: boolean;
-}
-
-export class RoleShortArrayDataResponse extends ArrayDataResponse<RoleShortResponse> {
-  @ApiProperty({ type: RoleShortResponse, isArray: true })
-  data: RoleShortResponse[];
-  constructor(
-    totalCount: number,
-    data: Array<RoleShortResponse>,
-    page: number,
-    limit: number,
-  ) {
-    super(totalCount, data, page, limit);
-    this.data = data;
-  }
 }
 
 export class UpdateRoleDto {

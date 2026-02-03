@@ -29,7 +29,7 @@ export class CreatrixService {
   async syncStudents() {
     const data = await this.creatrixStudentService.repository.findAll();
 
-    const { roles: defaultStudentRoles } = await this.roleService.findAll(
+    const { rows: defaultStudentRoles } = await this.roleService.findAll(
       {
         where: {
           isStudentDefault: true,
@@ -147,7 +147,7 @@ export class CreatrixService {
   async syncFaculties() {
     const data = await this.creatrixFacultyService.repository.findAll();
 
-    const { roles: defaultFacultyRoles } = await this.roleService.findAll(
+    const { rows: defaultFacultyRoles } = await this.roleService.findAll(
       {
         where: {
           isFacultyDefault: true,

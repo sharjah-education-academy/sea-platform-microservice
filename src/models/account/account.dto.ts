@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Account } from './account.model';
 import { Utils } from 'sea-platform-helpers';
-import { RoleShortResponse } from '../role/role.dto';
+import { RoleResponse } from '../role/role.dto';
 import { CONSTANTS } from 'sea-platform-helpers';
 import { OrganizationResponse } from '../organization/organization.dto';
 import { DepartmentResponse } from '../department/department.dto';
@@ -24,8 +24,8 @@ export class AccountResponse {
   birthDate: string;
   @ApiProperty({ type: Boolean })
   isLocked: boolean;
-  @ApiProperty({ type: RoleShortResponse, isArray: true })
-  roles: RoleShortResponse[];
+  @ApiProperty({ type: RoleResponse, isArray: true })
+  roles: RoleResponse[];
   @ApiProperty({ type: OrganizationResponse, nullable: true })
   organization: OrganizationResponse | undefined;
   @ApiProperty({ type: DepartmentResponse, nullable: true })
@@ -49,7 +49,7 @@ export class AccountResponse {
 
   constructor(
     account: Account,
-    roles?: RoleShortResponse[],
+    roles?: RoleResponse[],
     organization?: OrganizationResponse | undefined,
     department?: DepartmentResponse | undefined,
     permissionKeys?: CONSTANTS.Permission.PermissionKeys[],
