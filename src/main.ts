@@ -6,6 +6,7 @@ import * as cookieParser from 'cookie-parser';
 import { ServerConfigService } from './models/server-config/server-config.service';
 import { CONSTANTS } from 'sea-platform-helpers';
 import { IpMiddleware } from './middlewares/ip.middleware';
+import helmet from 'helmet';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -27,6 +28,31 @@ async function bootstrap() {
     credentials: true,
   });
   app.use(cookieParser());
+
+  // Security headers
+  app.use(
+    helmet({
+      contentSecurityPolicy: {
+        directives: {
+          defaultSrc: ["'self'"],
+          scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+          styleSrc: ["'self'", "'unsafe-inline'"],
+          imgSrc: ["'self'", 'data:', 'https:'],
+          connectSrc: ["'self'", 'https:'],
+          fontSrc: ["'self'", 'https:', 'data:'],
+          objectSrc: ["'none'"],
+          frameAncestors: ["'none'"],
+          upgradeInsecureRequests: [],
+        },
+      },
+
+      referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
+
+      crossOriginEmbedderPolicy: true,
+      crossOriginOpenerPolicy: { policy: 'same-origin' },
+      crossOriginResourcePolicy: { policy: 'same-origin' },
+    }),
+  );
 
   const config = new DocumentBuilder()
     .setTitle('SEA Platform Microservice')
