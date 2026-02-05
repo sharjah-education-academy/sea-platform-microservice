@@ -39,18 +39,22 @@ async function bootstrap() {
           styleSrc: ["'self'", "'unsafe-inline'"],
           imgSrc: ["'self'", 'data:', 'https:'],
           connectSrc: ["'self'", 'https:'],
-          fontSrc: ["'self'", 'https:', 'data:'],
-          objectSrc: ["'none'"],
+          fontSrc: ["'self'", 'data:', 'https:'],
           frameAncestors: ["'none'"],
+          objectSrc: ["'none'"],
+          baseUri: ["'self'"],
+          formAction: ["'self'"],
           upgradeInsecureRequests: [],
         },
       },
-
       referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
-
       crossOriginEmbedderPolicy: true,
       crossOriginOpenerPolicy: { policy: 'same-origin' },
       crossOriginResourcePolicy: { policy: 'same-origin' },
+      xContentTypeOptions: true,
+      frameguard: { action: 'deny' },
+      permittedCrossDomainPolicies: { permittedPolicies: 'none' },
+      hsts: { maxAge: 63072000, includeSubDomains: true, preload: true },
     }),
   );
 
