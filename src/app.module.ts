@@ -39,6 +39,7 @@ import { SyncControllerModule } from './controllers/sync/sync-controller.module'
 import { SystemControllerModule } from './controllers/system/system-controller.module';
 import { SystemModule } from './modules/system.module';
 import { HealthControllerModule } from './controllers/health/health-controller.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
@@ -53,6 +54,7 @@ import { HealthControllerModule } from './controllers/health/health-controller.m
     RedisCacheModule,
     ServerConfigModule,
     QueueModule,
+    ScheduleModule.forRoot(),
     AccountModule,
     AuthModule,
     MicrosoftAuthModule,
