@@ -9,6 +9,7 @@ import { RemoteEmailTemplateVersionService } from '../remote-email-template/remo
 import { CreatrixService } from '../creatrix/creatrix.service';
 import { ERPService } from '../erp/erp.service';
 import { Constants } from 'src/config';
+import { Cron, CronExpression } from '@nestjs/schedule';
 
 @Injectable()
 export class SyncService {
@@ -141,5 +142,13 @@ export class SyncService {
   async syncEmployeesAccounts() {
     await this.ERPService.syncEmployees();
     return true;
+  }
+
+  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
+  private async syncAll() {
+    console.log('Running daily sync tasks...');
+    await this.syncStudentsAccounts();
+    await this.syncFacultiesAccounts();
+    await this.syncEmployeesAccounts();
   }
 }
