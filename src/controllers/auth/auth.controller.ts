@@ -84,7 +84,7 @@ export class AuthController {
     const nodeEnv =
       this.serverConfigService.get<string>('NODE_ENV') || 'localhost';
 
-    const LoginResponse = await this.authService.login(
+    const loginResponse = await this.authService.login(
       body,
       deviceId,
       userAgent,
@@ -100,7 +100,7 @@ export class AuthController {
       ttlSeconds = expiresIn * 1000;
     }
 
-    res.cookie(CONSTANTS.JWT.JWTCookieKey, LoginResponse.accessToken, {
+    res.cookie(CONSTANTS.JWT.JWTCookieKey, loginResponse.accessToken, {
       httpOnly: false,
       secure: true,
       sameSite: 'none',
@@ -111,7 +111,7 @@ export class AuthController {
       path: '/',
       maxAge: ttlSeconds,
     });
-    return LoginResponse;
+    return loginResponse;
   }
 
   @Post('/microsoft/login')
@@ -143,7 +143,7 @@ export class AuthController {
     const nodeEnv =
       this.serverConfigService.get<string>('NODE_ENV') || 'localhost';
 
-    const LoginResponse = await this.authService.microsoftLogin(
+    const loginResponse = await this.authService.microsoftLogin(
       body,
       deviceId,
       userAgent,
@@ -159,7 +159,7 @@ export class AuthController {
       ttlSeconds = expiresIn * 1000;
     }
 
-    res.cookie(CONSTANTS.JWT.JWTCookieKey, LoginResponse.accessToken, {
+    res.cookie(CONSTANTS.JWT.JWTCookieKey, loginResponse.accessToken, {
       httpOnly: false,
       secure: true,
       sameSite: 'none',
@@ -170,7 +170,7 @@ export class AuthController {
       path: '/',
       maxAge: ttlSeconds,
     });
-    return LoginResponse;
+    return loginResponse;
   }
 
   @Post('logout')
