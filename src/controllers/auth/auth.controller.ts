@@ -81,6 +81,8 @@ export class AuthController {
     const sharedCookieDomain =
       this.serverConfigService.get<string>('SHARED_COOKIE_DOMAIN') ||
       '.platform.sea.ac.ae';
+    const nodeEnv =
+      this.serverConfigService.get<string>('NODE_ENV') || 'localhost';
 
     const loginResponse = await this.authService.login(
       body,
@@ -102,7 +104,10 @@ export class AuthController {
       httpOnly: false,
       secure: true,
       sameSite: 'none',
-      domain: sharedCookieDomain, // Share across subdomains
+      domain:
+        nodeEnv === CONSTANTS.Server.Environments.Development
+          ? undefined
+          : sharedCookieDomain, // Share across subdomains
       path: '/',
       maxAge: ttlSeconds,
     });
@@ -135,6 +140,10 @@ export class AuthController {
     const sharedCookieDomain =
       this.serverConfigService.get<string>('SHARED_COOKIE_DOMAIN') ||
       '.platform.sea.ac.ae';
+
+    const nodeEnv =
+      this.serverConfigService.get<string>('NODE_ENV') || 'localhost';
+
     const loginResponse = await this.authService.microsoftLogin(
       body,
       deviceId,
@@ -155,7 +164,10 @@ export class AuthController {
       httpOnly: false,
       secure: true,
       sameSite: 'none',
-      domain: sharedCookieDomain, // Share across subdomains
+      domain:
+        nodeEnv === CONSTANTS.Server.Environments.Development
+          ? undefined
+          : sharedCookieDomain, // Share across subdomains
       path: '/',
       maxAge: ttlSeconds,
     });
