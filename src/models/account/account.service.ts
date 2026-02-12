@@ -524,7 +524,9 @@ export class AccountService extends Services.SequelizeCRUDService<
     );
   }
 
-  async getAccountsInPermissionKeys(permissionKeys: string[]) {
+  async getAccountsInPermissionKeys(
+    permissionKeys: CONSTANTS.Permission.PermissionKeys[],
+  ) {
     const { rows: roles } = await this.roleService.findAll({
       include: [
         {

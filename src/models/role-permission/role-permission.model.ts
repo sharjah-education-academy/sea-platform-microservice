@@ -25,7 +25,7 @@ export class RolePermission extends Model {
   roleId: string;
 
   @Column({
-    type: DataType.ENUM(...Object.values(CONSTANTS.Permission.PermissionKeys)),
+    type: DataType.INTEGER,
     allowNull: false,
   })
   permissionKey: CONSTANTS.Permission.PermissionKeys;

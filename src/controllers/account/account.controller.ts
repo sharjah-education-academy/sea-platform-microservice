@@ -67,9 +67,14 @@ export class AccountController {
 
   @Get()
   @UseGuards(
-    new JWTAuthorizationGuard([
-      CONSTANTS.Permission.PermissionKeys.ManageAccountsRead,
-    ]),
+    new JWTAuthorizationGuard(
+      [
+        CONSTANTS.Permission.PermissionKeys.ManageAccountsRead,
+        CONSTANTS.Permission.PermissionKeys.ManageGoalsCreate,
+        CONSTANTS.Permission.PermissionKeys.ManageGoalsUpdateDetails,
+      ],
+      'one',
+    ),
   )
   @ApiOperation({ summary: 'fetch accounts' })
   @ApiQuery({

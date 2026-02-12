@@ -41,7 +41,10 @@ export class RolePermissionService {
     return await rolePermission.destroy({ force: true });
   }
 
-  async createMultiForRole(keys: string[], role: Role) {
+  async createMultiForRole(
+    keys: CONSTANTS.Permission.PermissionKeys[],
+    role: Role,
+  ) {
     await this.permissionService.checkAreLeafKeys(keys);
 
     const rolePermissions = await Promise.all(
