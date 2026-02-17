@@ -72,6 +72,10 @@ export class AccountController {
         CONSTANTS.Permission.PermissionKeys.ManageAccountsRead,
         CONSTANTS.Permission.PermissionKeys.ManageGoalsCreate,
         CONSTANTS.Permission.PermissionKeys.ManageGoalsUpdateDetails,
+        CONSTANTS.Permission.PermissionKeys.ManageInitiativesCreate,
+        CONSTANTS.Permission.PermissionKeys.ManageInitiativesUpdateDetails,
+        CONSTANTS.Permission.PermissionKeys.ManageProgramsCreate,
+        CONSTANTS.Permission.PermissionKeys.ManageProgramsUpdateDetails,
       ],
       'one',
     ),
@@ -107,9 +111,18 @@ export class AccountController {
 
   @Get('/:id')
   @UseGuards(
-    new JWTAuthorizationGuard([
-      CONSTANTS.Permission.PermissionKeys.ManageAccountsRead,
-    ]),
+    new JWTAuthorizationGuard(
+      [
+        CONSTANTS.Permission.PermissionKeys.ManageAccountsRead,
+        CONSTANTS.Permission.PermissionKeys.ManageGoalsCreate,
+        CONSTANTS.Permission.PermissionKeys.ManageGoalsUpdateDetails,
+        CONSTANTS.Permission.PermissionKeys.ManageInitiativesCreate,
+        CONSTANTS.Permission.PermissionKeys.ManageInitiativesUpdateDetails,
+        CONSTANTS.Permission.PermissionKeys.ManageProgramsCreate,
+        CONSTANTS.Permission.PermissionKeys.ManageProgramsUpdateDetails,
+      ],
+      'one',
+    ),
   )
   @ApiOperation({ summary: 'get account details' })
   @ApiParam({
