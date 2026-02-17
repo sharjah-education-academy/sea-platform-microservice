@@ -40,14 +40,18 @@ export class SyncService {
   async syncDefaultRoles() {
     const DEFAULTS = await Promise.all(
       Constants.Role.DEFAULT_ROLES.map(async (r) => {
+        const permissionKeyArrays = await Promise.all(
+          r.parentPermissionKeys.map((key) =>
+            this.permissionService.getLeafKeys(key),
+          ),
+        );
+        const permissionKeys = permissionKeyArrays.flat();
         return {
           name: r.name,
           description: r.description,
           color: r.color,
           applicationKey: r.applicationKey,
-          permissionKeys: await this.permissionService.getLeafKeys(
-            r.parentPermissionKey,
-          ),
+          permissionKeys,
           isStudentDefault: r.isStudentDefault,
           isFacultyDefault: r.isFacultyDefault,
           isEmployeeDefault: r.isEmployeeDefault,

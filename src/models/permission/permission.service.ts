@@ -12,7 +12,7 @@ import { Utils, CONSTANTS } from 'sea-platform-helpers';
 export class PermissionService {
   constructor() {}
 
-  async findPermissionByKey(key: string) {
+  async findPermissionByKey(key: CONSTANTS.Permission.PermissionKeys) {
     let permission: DTO.Permission.IPermission | undefined = undefined;
     for (let i = 0; i < CONSTANTS.Permission.PERMISSIONS.length; i++) {
       const p = CONSTANTS.Permission.PERMISSIONS[i];
@@ -29,7 +29,7 @@ export class PermissionService {
     return permission;
   }
 
-  async getLeafKeys(key: string) {
+  async getLeafKeys(key: CONSTANTS.Permission.PermissionKeys) {
     const permission = await this.findPermissionByKey(key);
     return await Utils.DFS.getAllLeafNodes(permission, 'children').map(
       (p) => p.key,
@@ -37,11 +37,13 @@ export class PermissionService {
   }
 
   async getAllLeafKeys() {
-    let keys: string[] = [];
+    let keys: CONSTANTS.Permission.PermissionKeys[] = [];
 
     for (let i = 0; i < CONSTANTS.Permission.PERMISSIONS.length; i++) {
       const p = CONSTANTS.Permission.PERMISSIONS[i];
-      const leafKeys = await this.getLeafKeys(p.key as string);
+      const leafKeys = await this.getLeafKeys(
+        p.key as CONSTANTS.Permission.PermissionKeys,
+      );
       keys = Utils.Array.concatWithoutDuplicates(
         keys,
         leafKeys,
@@ -52,12 +54,12 @@ export class PermissionService {
     return keys;
   }
 
-  async isLeafKey(key: string) {
+  async isLeafKey(key: CONSTANTS.Permission.PermissionKeys) {
     const leafKeys = await this.getAllLeafKeys();
     return leafKeys.includes(key);
   }
 
-  async checkIsLeafKey(key: string) {
+  async checkIsLeafKey(key: CONSTANTS.Permission.PermissionKeys) {
     const isLeaf = await this.isLeafKey(key);
 
     if (!isLeaf) {
@@ -65,7 +67,7 @@ export class PermissionService {
     }
   }
 
-  async checkAreLeafKeys(keys: string[]) {
+  async checkAreLeafKeys(keys: CONSTANTS.Permission.PermissionKeys[]) {
     for (let i = 0; i < keys.length; i++) {
       const key = keys[i];
       await this.checkIsLeafKey(key);
@@ -104,7 +106,7 @@ export class PermissionService {
 
   async makePermissionResponseForRole(
     permission: DTO.Permission.IPermission,
-    permissionKeys: string[],
+    permissionKeys: CONSTANTS.Permission.PermissionKeys[],
   ): Promise<PermissionResponseForRole> {
     const children: PermissionResponseForRole[] = [];
 
@@ -115,7 +117,9 @@ export class PermissionService {
       someChecked = false;
 
     if (isLeaf) {
-      allChecked = permissionKeys.includes(permission.key as string);
+      allChecked = permissionKeys.includes(
+        permission.key as CONSTANTS.Permission.PermissionKeys,
+      );
     } else {
       for (const child of permission.children) {
         const childResponse = await this.makePermissionResponseForRole(
