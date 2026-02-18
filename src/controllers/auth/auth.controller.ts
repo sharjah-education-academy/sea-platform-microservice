@@ -34,7 +34,7 @@ import { JWTAuthGuard } from 'src/guards/jwt-authentication.guard';
 import { AccountService } from 'src/models/account/account.service';
 import { OTPService } from 'src/models/otp/otp.service';
 import { Op } from 'sequelize';
-import { CONSTANTS, DTO } from 'sea-platform-helpers';
+import { CONSTANTS, DTO, Utils } from 'sea-platform-helpers';
 import { Role } from 'src/models/role/role.model';
 import { ApplicationService } from 'src/models/application/application.service';
 import { Response } from 'express';
@@ -100,7 +100,7 @@ export class AuthController {
       ttlSeconds = expiresIn * 1000;
     }
 
-    res.cookie(CONSTANTS.JWT.JWTCookieKey, loginResponse.accessToken, {
+    res.cookie(Utils.JWT.generateJWTKey(nodeEnv), loginResponse.accessToken, {
       httpOnly: false,
       secure: true,
       sameSite: 'none',
@@ -159,7 +159,7 @@ export class AuthController {
       ttlSeconds = expiresIn * 1000;
     }
 
-    res.cookie(CONSTANTS.JWT.JWTCookieKey, loginResponse.accessToken, {
+    res.cookie(Utils.JWT.generateJWTKey(nodeEnv), loginResponse.accessToken, {
       httpOnly: false,
       secure: true,
       sameSite: 'none',
@@ -190,10 +190,12 @@ export class AuthController {
     const sharedCookieDomain =
       this.serverConfigService.get<string>('SHARED_COOKIE_DOMAIN') ||
       '.platform.sea.ac.ae';
+    const nodeEnv =
+      this.serverConfigService.get<string>('NODE_ENV') || 'localhost';
 
     this.authService.logout(accountId, deviceId);
 
-    res.cookie(CONSTANTS.JWT.JWTCookieKey, '', {
+    res.cookie(Utils.JWT.generateJWTKey(nodeEnv), '', {
       httpOnly: false,
       secure: true,
       sameSite: 'none',
