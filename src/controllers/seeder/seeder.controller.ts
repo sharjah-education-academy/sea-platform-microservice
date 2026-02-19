@@ -11,4 +11,9 @@ export class SeederController {
     await this.seederService.initPlatformData();
     return true;
   }
+
+  @Post('/activate-account-alert-settings')
+  async activateAccountAlertSettings() {
+    return await this.seederService.activateAllAccountsAlertSettings();
+  }
 }
