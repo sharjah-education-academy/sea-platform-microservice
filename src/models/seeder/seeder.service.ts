@@ -5,6 +5,7 @@ import { RoleService } from '../role/role.service';
 import { DEFAULT_ROLE_NAMES } from 'src/config/constants/role';
 import { Op } from 'sequelize';
 import { AccountService } from '../account/account.service';
+import { AccountAlertSettingService } from '../account-alert-setting/account-alert-setting.service';
 
 @Injectable()
 export class SeederService {
@@ -13,6 +14,7 @@ export class SeederService {
     private readonly serverConfigService: ServerConfigService,
     private readonly roleService: RoleService,
     private readonly accountService: AccountService,
+    private readonly accountAlertSettingService: AccountAlertSettingService,
   ) {}
 
   private async seedSuperAdminAccount() {
@@ -58,5 +60,16 @@ export class SeederService {
     await this.syncService.syncDefaultApplications();
     await this.syncService.syncDefaultRoles();
     await this.seedSuperAdminAccount();
+  }
+
+  async activateAllAccountsAlertSettings() {
+    const accounts = await this.accountService.find({
+      attributes: ['id'],
+    });
+    const accountIds = accounts.map((a) => a.id);
+
+    return await this.accountAlertSettingService.activateAlertsForAccounts(
+      accountIds,
+    );
   }
 }
