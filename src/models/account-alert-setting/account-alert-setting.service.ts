@@ -155,8 +155,9 @@ export class AccountAlertSettingService {
     }
 
     console.log(
-      `Activated alert settings for ${accountIds.length} accounts: ${created} created, ${updated} updated.`,
+      `activateAlertsForAccounts: Processed ${accountIds.length} accounts. Created ${created} settings, updated ${updated} settings.`,
     );
+
     return { accountsProcessed: accountIds.length, created, updated };
   }
 }
