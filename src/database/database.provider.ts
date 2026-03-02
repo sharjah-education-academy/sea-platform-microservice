@@ -2,7 +2,6 @@ import { Sequelize, SequelizeOptions } from 'sequelize-typescript';
 import { OTP } from 'src/models/otp/otp.model';
 import { ServerConfigService } from 'src/models/server-config/server-config.service';
 import { Account } from 'src/models/account/account.model';
-import { CONSTANTS } from 'sea-platform-helpers';
 import { Role } from 'src/models/role/role.model';
 import { AccountRoles } from 'src/models/account-role/account-role.model';
 import { RolePermission } from 'src/models/role-permission/role-permission.model';
@@ -35,15 +34,11 @@ export const databaseProviders = [
         logging: serverConfigService.get<string>('DATABASE_LOGGING') === 'true',
       };
 
-      const serverEnv = serverConfigService.getServerEnvironment();
-      if (serverEnv !== CONSTANTS.Server.Environments.Production) {
-        ConnectionConfig.sync = { alter: true };
-      }
-
       const sequelize = new Sequelize({
         dialect: 'mysql',
         ...ConnectionConfig,
       });
+
       sequelize.addModels([
         Account,
         OTP,
@@ -59,7 +54,7 @@ export const databaseProviders = [
         Faculty,
         Employee,
       ]);
-      await sequelize.sync();
+
       return sequelize;
     },
     inject: [ServerConfigService],
@@ -87,8 +82,6 @@ export const databaseProviders = [
       });
       sequelize.addModels([CreatrixStudent, CreatrixFaculty]);
 
-      // No need for sync
-      // await sequelize.sync();
       return sequelize;
     },
     inject: [ServerConfigService],
