@@ -21,6 +21,7 @@ import { OrganizationModule } from './modules/organization.module';
 import { OrganizationControllerModule } from './controllers/organization/organization-controller.module';
 import { DepartmentModule } from './modules/department.module';
 import { ExternalOrganizationControllerModule } from './controllers/external/organization/external-organization-controller.module';
+import { ExternalFacultyControllerModule } from './controllers/external/faculty/external-faculty-controller.module';
 import { EmailTemplateControllerModule } from './controllers/email-template/email-template-controller.module';
 import { RedisCacheModule } from './modules/redis-cache.module';
 import { QueueModule } from './queue/queue.module';
@@ -74,6 +75,7 @@ import { ScheduleModule } from '@nestjs/schedule';
     OrganizationControllerModule,
     DepartmentModule,
     ExternalOrganizationControllerModule,
+    ExternalFacultyControllerModule,
     EmailTemplateControllerModule,
     LocalizationModule,
     LocalizationControllerModule,
