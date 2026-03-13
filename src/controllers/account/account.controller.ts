@@ -66,38 +66,39 @@ export class AccountController {
   }
 
   @Get()
-  @UseGuards(
-    new JWTAuthorizationGuard(
-      [
-        CONSTANTS.Permission.PermissionKeys.ManageAccountsRead,
-        CONSTANTS.Permission.PermissionKeys.ManageGoalsCreate,
-        CONSTANTS.Permission.PermissionKeys.ManageGoalsUpdateDetails,
-        CONSTANTS.Permission.PermissionKeys.ManageInitiativesCreate,
-        CONSTANTS.Permission.PermissionKeys.ManageInitiativesUpdateDetails,
-        CONSTANTS.Permission.PermissionKeys.ManageProgramsCreate,
-        CONSTANTS.Permission.PermissionKeys.ManageProgramsUpdateDetails,
-        CONSTANTS.Permission.PermissionKeys.ManageInitiativesOKRsCreate,
-        CONSTANTS.Permission.PermissionKeys.ManageInitiativesOKRsUpdateDetails,
-        CONSTANTS.Permission.PermissionKeys
-          .ManageInitiativesOKRsKeyResultCreate,
-        CONSTANTS.Permission.PermissionKeys
-          .ManageInitiativesOKRsKeyResultUpdateDetails,
-        CONSTANTS.Permission.PermissionKeys.ManageProgramRisksCreate,
-        CONSTANTS.Permission.PermissionKeys.ManageProgramRisksUpdateDetails,
-        CONSTANTS.Permission.PermissionKeys.ManageProjectRisksCreate,
-        CONSTANTS.Permission.PermissionKeys.ManageProjectRisksUpdateDetails,
-        CONSTANTS.Permission.PermissionKeys.ManageProgramIssuesCreate,
-        CONSTANTS.Permission.PermissionKeys.ManageProgramIssuesUpdateDetails,
-        CONSTANTS.Permission.PermissionKeys.ManageProjectIssuesCreate,
-        CONSTANTS.Permission.PermissionKeys.ManageProjectIssuesUpdateDetails,
-        CONSTANTS.Permission.PermissionKeys.ManageProgramKPIsCreate,
-        CONSTANTS.Permission.PermissionKeys.ManageProgramKPIsUpdateDetails,
-        CONSTANTS.Permission.PermissionKeys.ManageProjectKPIsCreate,
-        CONSTANTS.Permission.PermissionKeys.ManageProjectKPIsUpdateDetails,
-      ],
-      'one',
-    ),
-  )
+  // TODO: allow all to read accounts for now until solve the project manager read issue
+  // @UseGuards(
+  //   new JWTAuthorizationGuard(
+  //     [
+  //       CONSTANTS.Permission.PermissionKeys.ManageAccountsRead,
+  //       CONSTANTS.Permission.PermissionKeys.ManageGoalsCreate,
+  //       CONSTANTS.Permission.PermissionKeys.ManageGoalsUpdateDetails,
+  //       CONSTANTS.Permission.PermissionKeys.ManageInitiativesCreate,
+  //       CONSTANTS.Permission.PermissionKeys.ManageInitiativesUpdateDetails,
+  //       CONSTANTS.Permission.PermissionKeys.ManageProgramsCreate,
+  //       CONSTANTS.Permission.PermissionKeys.ManageProgramsUpdateDetails,
+  //       CONSTANTS.Permission.PermissionKeys.ManageInitiativesOKRsCreate,
+  //       CONSTANTS.Permission.PermissionKeys.ManageInitiativesOKRsUpdateDetails,
+  //       CONSTANTS.Permission.PermissionKeys
+  //         .ManageInitiativesOKRsKeyResultCreate,
+  //       CONSTANTS.Permission.PermissionKeys
+  //         .ManageInitiativesOKRsKeyResultUpdateDetails,
+  //       CONSTANTS.Permission.PermissionKeys.ManageProgramRisksCreate,
+  //       CONSTANTS.Permission.PermissionKeys.ManageProgramRisksUpdateDetails,
+  //       CONSTANTS.Permission.PermissionKeys.ManageProjectRisksCreate,
+  //       CONSTANTS.Permission.PermissionKeys.ManageProjectRisksUpdateDetails,
+  //       CONSTANTS.Permission.PermissionKeys.ManageProgramIssuesCreate,
+  //       CONSTANTS.Permission.PermissionKeys.ManageProgramIssuesUpdateDetails,
+  //       CONSTANTS.Permission.PermissionKeys.ManageProjectIssuesCreate,
+  //       CONSTANTS.Permission.PermissionKeys.ManageProjectIssuesUpdateDetails,
+  //       CONSTANTS.Permission.PermissionKeys.ManageProgramKPIsCreate,
+  //       CONSTANTS.Permission.PermissionKeys.ManageProgramKPIsUpdateDetails,
+  //       CONSTANTS.Permission.PermissionKeys.ManageProjectKPIsCreate,
+  //       CONSTANTS.Permission.PermissionKeys.ManageProjectKPIsUpdateDetails,
+  //     ],
+  //     'one',
+  //   ),
+  // )
   @ApiOperation({ summary: 'fetch accounts' })
   @ApiQuery({
     name: 'page',
